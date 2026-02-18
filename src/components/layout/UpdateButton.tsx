@@ -5,13 +5,22 @@ type UpdateState = 'idle' | 'available' | 'downloading' | 'ready';
 export default function UpdateButton() {
   const [state, setState] = useState<UpdateState>('idle');
   const [newVersion, setNewVersion] = useState<string>('');
+  const [currentVersion, setCurrentVersion] = useState<string>('');
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    // Get current app version
+    window.electronAPI?.getAppVersion().then((v: string) => setCurrentVersion(v));
+
     // Listen for update events
-    window.electronAPI.onUpdateAvailable((version) => {
-      setNewVersion(version);
-      setState('available');
+    window.electronAPI?.onUpdateAvailable((version) => {
+      // Only show update if new version is different from current
+      window.electronAPI?.getAppVersion().then((current: string) => {
+        if (version !== current) {
+          setNewVersion(version);
+          setState('available');
+        }
+      });
     });
 
     window.electronAPI.onUpdateDownloadProgress((percent) => {

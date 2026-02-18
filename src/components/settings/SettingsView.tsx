@@ -28,8 +28,13 @@ export default function SettingsView() {
     window.electronAPI?.getAppVersion().then((v: string) => setAppVersion(v));
 
     window.electronAPI?.onUpdateAvailable((version: string) => {
-      setNewVersion(version);
-      setUpdateState('available');
+      // Only show update if new version is different from current
+      window.electronAPI?.getAppVersion().then((current: string) => {
+        if (version !== current) {
+          setNewVersion(version);
+          setUpdateState('available');
+        }
+      });
     });
 
     window.electronAPI?.onUpdateDownloadProgress((percent: number) => {
@@ -51,7 +56,8 @@ export default function SettingsView() {
     setErrorMsg('');
     try {
       const result = await window.electronAPI?.checkForUpdates();
-      if (result?.available) {
+      const currentVer = await window.electronAPI?.getAppVersion();
+      if (result?.available && result.version !== currentVer) {
         setNewVersion(result.version || '');
         setUpdateState('available');
       } else {
