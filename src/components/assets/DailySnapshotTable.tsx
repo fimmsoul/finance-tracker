@@ -59,12 +59,6 @@ export default function DailySnapshotTable({
     }
   };
 
-  // Newest is already on the left, so scroll to start
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollLeft = 0;
-    }
-  }, [snapshots]);
 
   const convertValue = (usdValue: number): number => {
     return convertBetween(usdValue, 'USD', displayCurrency);

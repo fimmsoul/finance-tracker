@@ -151,43 +151,6 @@ export function useDailySnapshots(
     const today = todayString();
     const totals = computeTotals(allStocks, accounts, assets, cryptos, convertBetween);
 
-    // 현재 저장된 스냅샷 중 가장 최근 것 확인
-    const { data: latestSnapshot } = await supabase
-      .from('daily_snapshots')
-      .select('snapshot_date, stocks_value, cash_value, gold_value, crypto_value, bonds_value, real_estate_value, total_value')
-      .eq('user_id', user.id)
-      .order('snapshot_date', { ascending: false })
-      .limit(1)
-      .single();
-
-    // 빠진 날짜들 채우기 (마지막 스냅샷 값으로)
-    if (latestSnapshot && latestSnapshot.snapshot_date < today) {
-      const missingDates = getMissingDates(latestSnapshot.snapshot_date, today);
-
-      if (missingDates.length > 0) {
-        // 빠진 날짜들에 마지막 스냅샷 값 복사
-        const fillData = missingDates.map((date) => ({
-          user_id: user.id,
-          snapshot_date: date,
-          stocks_value: latestSnapshot.stocks_value,
-          cash_value: latestSnapshot.cash_value,
-          gold_value: latestSnapshot.gold_value,
-          crypto_value: latestSnapshot.crypto_value,
-          bonds_value: latestSnapshot.bonds_value,
-          real_estate_value: latestSnapshot.real_estate_value,
-          total_value: latestSnapshot.total_value,
-        }));
-
-        const { error: fillError } = await supabase
-          .from('daily_snapshots')
-          .upsert(fillData, { onConflict: 'user_id,snapshot_date' });
-
-        if (fillError) {
-          console.error('Error filling missing snapshots:', fillError.message);
-        }
-      }
-    }
-
     // 오늘 스냅샷 기록 (현재 계산된 값)
     const { error } = await supabase
       .from('daily_snapshots')
