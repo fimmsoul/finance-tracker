@@ -1,0 +1,44 @@
+appId: com.financetracker.app
+productName: Finance Tracker
+directories:
+  buildResources: resources
+  output: release
+
+files:
+  - dist/electron/**/*
+  - dist/renderer/**/*
+  - package.json
+
+mac:
+  category: public.app-category.finance
+  target:
+    - target: dmg
+      arch:
+        - universal
+  protocols:
+    - name: Finance Tracker Auth
+      schemes:
+        - financetracker
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  protocols:
+    - name: Finance Tracker Auth
+      schemes:
+        - financetracker
+
+nsis:
+  oneClick: true
+  perMachine: false
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
