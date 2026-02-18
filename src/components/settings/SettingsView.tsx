@@ -1,9 +1,12 @@
+import { useState, useEffect } from 'react';
 import { useStockRefresh } from '@/hooks/StockRefreshContext';
 
 function formatLastUpdated(date: Date | null): string {
   if (!date) return '-';
   return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
+
+type UpdateState = 'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'no-update' | 'error';
 
 export default function SettingsView() {
   const {
@@ -14,6 +17,62 @@ export default function SettingsView() {
     marketOpen,
     lastUpdated,
   } = useStockRefresh();
+
+  const [appVersion, setAppVersion] = useState<string>('');
+  const [updateState, setUpdateState] = useState<UpdateState>('idle');
+  const [newVersion, setNewVersion] = useState<string>('');
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [errorMsg, setErrorMsg] = useState<string>('');
+
+  useEffect(() => {
+    window.electronAPI?.getAppVersion().then((v: string) => setAppVersion(v));
+
+    window.electronAPI?.onUpdateAvailable((version: string) => {
+      setNewVersion(version);
+      setUpdateState('available');
+    });
+
+    window.electronAPI?.onUpdateDownloadProgress((percent: number) => {
+      setDownloadProgress(Math.round(percent));
+    });
+
+    window.electronAPI?.onUpdateDownloaded(() => {
+      setUpdateState('ready');
+    });
+
+    window.electronAPI?.onUpdateError((error: string) => {
+      setErrorMsg(error);
+      setUpdateState('error');
+    });
+  }, []);
+
+  const handleCheckUpdate = async () => {
+    setUpdateState('checking');
+    setErrorMsg('');
+    try {
+      const result = await window.electronAPI?.checkForUpdates();
+      if (result?.available) {
+        setNewVersion(result.version || '');
+        setUpdateState('available');
+      } else {
+        setUpdateState('no-update');
+        setTimeout(() => setUpdateState('idle'), 3000);
+      }
+    } catch (err) {
+      setErrorMsg(String(err));
+      setUpdateState('error');
+    }
+  };
+
+  const handleDownload = async () => {
+    setUpdateState('downloading');
+    setDownloadProgress(0);
+    await window.electronAPI?.downloadUpdate();
+  };
+
+  const handleInstall = () => {
+    window.electronAPI?.installUpdate();
+  };
 
   return (
     <div className="max-w-2xl">
@@ -107,6 +166,98 @@ export default function SettingsView() {
               <p className="mt-1">
                 Auto-refresh is automatically paused when the market closes.
               </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* App Version Section */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mt-6">
+        <div className="p-6">
+          <h2 className="text-base font-medium text-gray-900 mb-4">App Version</h2>
+
+          <div className="space-y-4">
+            {/* Current version */}
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Current Version</label>
+                <p className="text-xs text-gray-500 mt-0.5">Installed version of the app</p>
+              </div>
+              <span className="text-sm font-mono text-gray-600">v{appVersion || '...'}</span>
+            </div>
+
+            {/* Update check */}
+            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Updates</label>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {updateState === 'no-update' && 'You have the latest version'}
+                  {updateState === 'available' && `New version ${newVersion} available`}
+                  {updateState === 'downloading' && `Downloading... ${downloadProgress}%`}
+                  {updateState === 'ready' && 'Update ready to install'}
+                  {updateState === 'error' && <span className="text-red-500">{errorMsg || 'Update check failed'}</span>}
+                  {(updateState === 'idle' || updateState === 'checking') && 'Check for available updates'}
+                </p>
+              </div>
+              <div>
+                {updateState === 'idle' && (
+                  <button
+                    onClick={handleCheckUpdate}
+                    className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    Check for Updates
+                  </button>
+                )}
+                {updateState === 'checking' && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-500">
+                    <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Checking...
+                  </div>
+                )}
+                {updateState === 'no-update' && (
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-emerald-600">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Up to date
+                  </span>
+                )}
+                {updateState === 'available' && (
+                  <button
+                    onClick={handleDownload}
+                    className="px-3 py-1.5 text-xs font-medium text-white bg-emerald-500 hover:bg-emerald-600 rounded-md transition-colors"
+                  >
+                    Download Update
+                  </button>
+                )}
+                {updateState === 'downloading' && (
+                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-emerald-500 transition-all duration-300"
+                      style={{ width: `${downloadProgress}%` }}
+                    />
+                  </div>
+                )}
+                {updateState === 'ready' && (
+                  <button
+                    onClick={handleInstall}
+                    className="px-3 py-1.5 text-xs font-medium text-white bg-emerald-500 hover:bg-emerald-600 rounded-md transition-colors"
+                  >
+                    Restart & Update
+                  </button>
+                )}
+                {updateState === 'error' && (
+                  <button
+                    onClick={handleCheckUpdate}
+                    className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    Retry
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
