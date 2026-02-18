@@ -30,6 +30,7 @@ win:
     - target: nsis
       arch:
         - x64
+  artifactName: "Finance-Tracker-Setup-${version}.exe"
   protocols:
     - name: Finance Tracker Auth
       schemes:

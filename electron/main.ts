@@ -178,6 +178,8 @@ ipcMain.handle('check-for-updates', async () => {
 
 ipcMain.handle('download-update', async () => {
   try {
+    // Re-check for updates before downloading to ensure updater state is valid
+    await autoUpdater.checkForUpdates();
     await autoUpdater.downloadUpdate();
     return { success: true };
   } catch (err) {
