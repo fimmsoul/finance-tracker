@@ -1,8 +1,13 @@
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { autoUpdater } from 'electron-updater';
 import path from 'path';
 
 const PROTOCOL_NAME = 'financetracker';
 const isDev = !app.isPackaged;
+
+// Configure auto-updater
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = true;
 
 // Register custom protocol for OAuth callback
 if (process.defaultApp) {
@@ -121,4 +126,70 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});
+
+// ─── Auto Updater ───────────────────────────────────────────────────────────
+
+// Check for updates when app is ready (only in production)
+app.whenReady().then(() => {
+  if (!isDev) {
+    // Check for updates after a short delay
+    setTimeout(() => {
+      autoUpdater.checkForUpdates().catch((err) => {
+        console.error('Failed to check for updates:', err);
+      });
+    }, 3000);
+  }
+});
+
+// Send update status to renderer
+autoUpdater.on('update-available', (info) => {
+  mainWindow?.webContents.send('update-available', info.version);
+});
+
+autoUpdater.on('update-not-available', () => {
+  mainWindow?.webContents.send('update-not-available');
+});
+
+autoUpdater.on('download-progress', (progress) => {
+  mainWindow?.webContents.send('update-download-progress', progress.percent);
+});
+
+autoUpdater.on('update-downloaded', () => {
+  mainWindow?.webContents.send('update-downloaded');
+});
+
+autoUpdater.on('error', (err) => {
+  console.error('Auto-updater error:', err);
+  mainWindow?.webContents.send('update-error', err.message);
+});
+
+// IPC handlers for update actions
+ipcMain.handle('check-for-updates', async () => {
+  if (isDev) return { available: false };
+  try {
+    const result = await autoUpdater.checkForUpdates();
+    return { available: !!result?.updateInfo, version: result?.updateInfo?.version };
+  } catch (err) {
+    console.error('Check for updates failed:', err);
+    return { available: false, error: String(err) };
+  }
+});
+
+ipcMain.handle('download-update', async () => {
+  try {
+    await autoUpdater.downloadUpdate();
+    return { success: true };
+  } catch (err) {
+    console.error('Download update failed:', err);
+    return { success: false, error: String(err) };
+  }
+});
+
+ipcMain.handle('install-update', () => {
+  autoUpdater.quitAndInstall(false, true);
+});
+
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion();
 });
