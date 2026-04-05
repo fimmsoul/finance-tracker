@@ -65,13 +65,13 @@ export default function CryptoRow({ crypto, onUpdate, onDelete, isNew }: CryptoR
     <tr
       ref={setNodeRef}
       style={style}
-      className="border-b border-gray-50 hover:bg-gray-100/60 transition-colors group"
+      className="border-b border-[var(--color-border-light)] hover:bg-[var(--color-border-light)]/60 transition-colors duration-200 group"
     >
       <td className="py-1.5 px-1 w-8">
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity touch-none"
+          className="cursor-grab active:cursor-grabbing text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity duration-200 touch-none"
           tabIndex={-1}
         >
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -147,16 +147,16 @@ export default function CryptoRow({ crypto, onUpdate, onDelete, isNew }: CryptoR
           onShiftTab={() => buyPriceRef.current?.activate()}
         />
       </td>
-      <td className="py-1.5 px-2 w-28 text-right text-sm tabular-nums">
+      <td className="py-1.5 px-2 w-28 text-right text-[13px] tabular-nums text-[var(--color-text)]">
         {formatCurrencyValue(valueInUSD, 'USD')}
       </td>
-      <td className="py-1.5 px-2 w-32 text-right text-sm tabular-nums">
+      <td className="py-1.5 px-2 w-32 text-right text-[13px] tabular-nums text-[var(--color-text)]">
         {formatCurrencyValue(valueInKRW, 'KRW')}
       </td>
-      <td className="py-1.5 px-2 w-28 text-right text-sm tabular-nums">
-        <span className={gain >= 0 ? 'text-red-500' : 'text-blue-500'}>
+      <td className="py-1.5 px-2 w-28 text-right text-[13px] tabular-nums">
+        <span className={gain >= 0 ? 'text-[var(--color-negative)]' : 'text-[var(--color-primary)]'}>
           {gainInUSD >= 0 ? '+' : ''}{formatCurrencyValue(gainInUSD, 'USD')}
-          <span className="text-xs ml-1 opacity-60">
+          <span className="text-[11px] ml-1 opacity-60">
             ({gainPct >= 0 ? '+' : ''}{gainPct.toFixed(1)}%)
           </span>
         </span>
@@ -166,13 +166,13 @@ export default function CryptoRow({ crypto, onUpdate, onDelete, isNew }: CryptoR
           <div className="flex gap-1">
             <button
               onClick={() => { onDelete(crypto.id); setConfirming(false); }}
-              className="text-xs text-red-500 hover:text-red-700 cursor-pointer"
+              className="text-[11px] text-[var(--color-negative)] hover:text-red-700 cursor-pointer transition-colors duration-200"
             >
               Yes
             </button>
             <button
               onClick={() => setConfirming(false)}
-              className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer"
+              className="text-[11px] text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] cursor-pointer transition-colors duration-200"
             >
               No
             </button>
@@ -180,7 +180,7 @@ export default function CryptoRow({ crypto, onUpdate, onDelete, isNew }: CryptoR
         ) : (
           <button
             onClick={() => setConfirming(true)}
-            className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all cursor-pointer"
+            className="opacity-0 group-hover:opacity-100 text-[var(--color-text-muted)] hover:text-[var(--color-negative)] transition-all duration-200 cursor-pointer"
             title="Delete"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

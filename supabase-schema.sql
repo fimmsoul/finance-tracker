@@ -25,6 +25,8 @@ CREATE TABLE stocks (
   current_price NUMERIC(15, 2) NOT NULL DEFAULT 0,
   currency      TEXT NOT NULL DEFAULT 'USD',
   notes         TEXT,
+  base_quantity NUMERIC(15, 4) DEFAULT NULL,  -- 거래 추적 시작 전 기준 수량
+  base_cost     NUMERIC(15, 2) DEFAULT NULL,  -- 거래 추적 시작 전 기준 총 비용
   created_at    TIMESTAMPTZ DEFAULT NOW(),
   updated_at    TIMESTAMPTZ DEFAULT NOW()
 );
@@ -226,3 +228,34 @@ CREATE POLICY "Users can delete own custom groups" ON custom_groups FOR DELETE U
 CREATE TRIGGER custom_groups_updated_at BEFORE UPDATE ON custom_groups FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE INDEX idx_custom_groups_user_id ON custom_groups(user_id);
 CREATE INDEX idx_custom_groups_view_id ON custom_groups(view_id);
+
+-- ============================================================
+-- STOCK TRANSACTIONS TABLE
+-- Records buy/sell transactions for stocks
+-- ============================================================
+CREATE TABLE stock_transactions (
+  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id         UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  stock_id        UUID NOT NULL REFERENCES stocks(id) ON DELETE CASCADE,
+  transaction_date DATE NOT NULL,
+  type            TEXT NOT NULL CHECK (type IN ('buy', 'sell')),
+  quantity        NUMERIC(15, 4) NOT NULL,
+  price_per_share NUMERIC(15, 4) NOT NULL,
+  fees            NUMERIC(15, 2) DEFAULT 0,
+  exchange_rate   NUMERIC(15, 6) DEFAULT NULL,  -- USD 주식용 환율
+  notes           TEXT,
+  created_at      TIMESTAMPTZ DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE stock_transactions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own transactions" ON stock_transactions FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own transactions" ON stock_transactions FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own transactions" ON stock_transactions FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own transactions" ON stock_transactions FOR DELETE USING (auth.uid() = user_id);
+
+CREATE TRIGGER stock_transactions_updated_at BEFORE UPDATE ON stock_transactions FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE INDEX idx_stock_transactions_user_id ON stock_transactions(user_id);
+CREATE INDEX idx_stock_transactions_stock_id ON stock_transactions(stock_id);
+CREATE INDEX idx_stock_transactions_date ON stock_transactions(user_id, transaction_date DESC);

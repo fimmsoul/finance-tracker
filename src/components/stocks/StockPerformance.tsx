@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { formatCurrencyValue } from '@/lib/currency';
 import { useCurrencyContext } from '@/hooks/CurrencyContext';
 import { useSharedStocks } from '@/hooks/DataContext';
+import { useFamilyContext } from '@/hooks/FamilyContext';
 import { PerformanceSkeleton } from '@/components/ui/Skeleton';
 import type { AccountType } from '@/types/stock';
 import type { Dividend } from '@/types/dividend';
@@ -13,12 +14,25 @@ interface StockPerformanceProps {
 
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+type WithMemberId = { member_id?: string | null };
+
+function filterByMember<T extends WithMemberId>(items: T[], memberId: string | 'all'): T[] {
+  if (memberId === 'all') return items;
+  return items.filter((item) => item.member_id === memberId);
+}
+
 export default function StockPerformance({ accountType }: StockPerformanceProps) {
   const { stocks, loading: stocksLoading } = useSharedStocks(accountType);
-  const [dividends, setDividends] = useState<Dividend[]>([]);
+  const { activeMemberId } = useFamilyContext();
+  const [allDividends, setAllDividends] = useState<Dividend[]>([]);
   const [dividendsLoading, setDividendsLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const { convertBetween } = useCurrencyContext();
+
+  const dividends = useMemo(
+    () => filterByMember(allDividends, activeMemberId),
+    [allDividends, activeMemberId],
+  );
 
   const fetchDividends = useCallback(async () => {
     const { data, error } = await supabase
@@ -26,7 +40,7 @@ export default function StockPerformance({ accountType }: StockPerformanceProps)
       .select('*')
       .order('received_date', { ascending: true });
 
-    if (!error && data) setDividends(data);
+    if (!error && data) setAllDividends(data);
     setDividendsLoading(false);
   }, []);
 
@@ -64,10 +78,21 @@ export default function StockPerformance({ accountType }: StockPerformanceProps)
     return Array.from(years).sort((a, b) => b - a);
   }, [dividends]);
 
+  // All-time dividends by stock (for cumulative metrics)
+  const allTimeDividendsByStock = useMemo(() => {
+    const map: Record<string, Dividend[]> = {};
+    for (const d of dividends) {
+      if (!map[d.stock_id]) map[d.stock_id] = [];
+      map[d.stock_id].push(d);
+    }
+    return map;
+  }, [dividends]);
+
   // Per-stock metrics — all values in the stock's NATIVE currency
   const stockMetrics = useMemo(() => {
     return validStocks.map((stock) => {
       const stockDividends = dividendsByStock[stock.id] || [];
+      const allTimeDividends = allTimeDividendsByStock[stock.id] || [];
       const ccy = stock.currency; // native currency for this stock
 
       // Investment cost (native currency)
@@ -94,17 +119,33 @@ export default function StockPerformance({ accountType }: StockPerformanceProps)
         annualForeignTax += convertBetween(d.foreign_tax, d.currency, ccy);
       }
 
+      // Cumulative (all-time) dividends
+      let cumulativeDividendTotal = 0;
+      for (const d of allTimeDividends) {
+        const net = d.amount - d.foreign_tax;
+        cumulativeDividendTotal += convertBetween(net, d.currency, ccy);
+      }
+
       // YoC (Yield on Cost) = annual dividends / investment cost
       const yoc = investmentCost > 0 ? (annualDividendTotal / investmentCost) * 100 : 0;
 
-      // RoC (Return of Capital) = annual dividends / current value
-      const roc = currentValue > 0 ? (annualDividendTotal / currentValue) * 100 : 0;
+      // RoC (Return of Capital) = annual dividends / investment cost
+      const roc = investmentCost > 0 ? (annualDividendTotal / investmentCost) * 100 : 0;
+
+      // Cumulative RoC = all-time dividends / investment cost
+      const cumulativeRoc = investmentCost > 0 ? (cumulativeDividendTotal / investmentCost) * 100 : 0;
 
       // Total Revenue = stock gain + dividends (all in native currency)
       const totalRevenue = stockGain + annualDividendTotal;
 
+      // Cumulative Total Revenue = stock gain + all-time dividends
+      const cumulativeTotalRevenue = stockGain + cumulativeDividendTotal;
+
       // TR (Total Return %) = total revenue / investment cost
       const trPct = investmentCost > 0 ? (totalRevenue / investmentCost) * 100 : 0;
+
+      // Cumulative TR % = cumulative total revenue / investment cost
+      const cumulativeTrPct = investmentCost > 0 ? (cumulativeTotalRevenue / investmentCost) * 100 : 0;
 
       return {
         stock,
@@ -116,13 +157,17 @@ export default function StockPerformance({ accountType }: StockPerformanceProps)
         monthlyDividends,
         annualDividendTotal,
         annualForeignTax,
+        cumulativeDividendTotal,
         yoc,
         roc,
+        cumulativeRoc,
         totalRevenue,
+        cumulativeTotalRevenue,
         trPct,
+        cumulativeTrPct,
       };
     });
-  }, [validStocks, dividendsByStock, convertBetween]);
+  }, [validStocks, dividendsByStock, allTimeDividendsByStock, convertBetween]);
 
   // Sort: stocks with dividends first (left), without dividends last (right)
   const sortedMetrics = useMemo(() => {
@@ -151,13 +196,13 @@ export default function StockPerformance({ accountType }: StockPerformanceProps)
   if (validStocks.length === 0) return null;
 
   return (
-    <div className="mt-14 pt-6 border-t border-gray-200">
+    <div className="mt-14 pt-6 border-t border-[var(--color-border)]">
       <div className="flex items-center justify-between mb-5">
-        <h3 className="text-base font-semibold text-gray-800">Stock Performance Summary</h3>
+        <h3 className="text-base font-semibold text-[var(--color-text)]">Stock Performance Summary</h3>
         <select
           value={selectedYear}
           onChange={(e) => setSelectedYear(Number(e.target.value))}
-          className="text-xs border border-gray-200 rounded-md px-2 py-1.5 text-gray-600 bg-white focus:outline-none focus:border-emerald-400"
+          className="text-[12px] border border-[var(--color-border)] rounded-lg px-2 py-1.5 text-[var(--color-text-secondary)] bg-[var(--color-bg-card)] focus:outline-none focus:border-[var(--color-primary)] cursor-pointer transition-colors duration-200"
         >
           {availableYears.map((y) => (
             <option key={y} value={y}>{y}</option>
@@ -166,10 +211,10 @@ export default function StockPerformance({ accountType }: StockPerformanceProps)
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-[13px]">
           <thead>
-            <tr className="border-b border-gray-200 text-left">
-              <th className="py-2 px-3 text-xs font-medium text-gray-400 uppercase tracking-wider sticky left-0 bg-[#FAFAF8] z-10 min-w-[160px] relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gray-200">
+            <tr className="border-b border-[var(--color-border)] text-left">
+              <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider sticky left-0 bg-[var(--color-bg)] z-10 min-w-[160px] relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-[var(--color-border)]">
                 Metric
               </th>
               {sortedMetrics.map((m) => {
@@ -181,7 +226,7 @@ export default function StockPerformance({ accountType }: StockPerformanceProps)
                 return (
                   <th
                     key={m.stock.id}
-                    className="py-2 px-3 text-xs font-medium text-gray-600 uppercase tracking-wider text-right min-w-[120px]"
+                    className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-secondary)] uppercase tracking-wider text-right min-w-[120px]"
                     title={`${m.stock.ticker}${m.stock.name ? ` — ${m.stock.name}` : ''}`}
                   >
                     {label}
@@ -192,30 +237,30 @@ export default function StockPerformance({ accountType }: StockPerformanceProps)
           </thead>
           <tbody>
             {/* Investment Cost */}
-            <tr className="border-b border-gray-50">
-              <td className="py-1.5 px-3 text-gray-500 sticky left-0 bg-[#FAFAF8] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gray-200">Investment Cost</td>
+            <tr className="border-b border-[var(--color-border-light)]">
+              <td className="py-1.5 px-3 text-[var(--color-text-secondary)] sticky left-0 bg-[var(--color-bg)] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-[var(--color-border)]">Investment Cost</td>
               {sortedMetrics.map((m) => (
-                <td key={m.stock.id} className="py-1.5 px-3 text-right tabular-nums text-gray-700">
+                <td key={m.stock.id} className="py-1.5 px-3 text-right tabular-nums text-[var(--color-text)]">
                   {formatCurrencyValue(m.investmentCost, m.ccy)}
                 </td>
               ))}
             </tr>
 
             {/* Current Value */}
-            <tr className="border-b border-gray-50">
-              <td className="py-1.5 px-3 text-gray-500 sticky left-0 bg-[#FAFAF8] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gray-200">Current Value</td>
+            <tr className="border-b border-[var(--color-border-light)]">
+              <td className="py-1.5 px-3 text-[var(--color-text-secondary)] sticky left-0 bg-[var(--color-bg)] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-[var(--color-border)]">Current Value</td>
               {sortedMetrics.map((m) => (
-                <td key={m.stock.id} className="py-1.5 px-3 text-right tabular-nums text-gray-700">
+                <td key={m.stock.id} className="py-1.5 px-3 text-right tabular-nums text-[var(--color-text)]">
                   {formatCurrencyValue(m.currentValue, m.ccy)}
                 </td>
               ))}
             </tr>
 
             {/* Quantity */}
-            <tr className="border-b border-gray-50 bg-gray-50">
-              <td className="py-1.5 px-3 text-gray-500 sticky left-0 bg-gray-50 z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gray-200">Quantity</td>
+            <tr className="border-b border-[var(--color-border-light)] bg-[var(--color-bg-sidebar)]">
+              <td className="py-1.5 px-3 text-[var(--color-text-secondary)] sticky left-0 bg-[var(--color-bg-sidebar)] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-[var(--color-border)]">Quantity</td>
               {sortedMetrics.map((m) => (
-                <td key={m.stock.id} className="py-1.5 px-3 text-right tabular-nums text-gray-700">
+                <td key={m.stock.id} className="py-1.5 px-3 text-right tabular-nums text-[var(--color-text)]">
                   {m.stock.quantity.toLocaleString('en-US', { maximumFractionDigits: 4 })}
                 </td>
               ))}
@@ -224,19 +269,19 @@ export default function StockPerformance({ accountType }: StockPerformanceProps)
             {/* Monthly Dividends Header */}
             {activeMonths.length > 0 && (
               <>
-                <tr className="border-b border-gray-100 bg-emerald-50">
-                  <td className="py-1.5 px-3 text-gray-600 font-medium sticky left-0 bg-emerald-50 z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gray-200">Monthly Dividends</td>
+                <tr className="border-b border-[var(--color-border)] bg-green-50">
+                  <td className="py-1.5 px-3 text-[var(--color-text-secondary)] font-medium sticky left-0 bg-green-50 z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-[var(--color-border)]">Monthly Dividends</td>
                   {sortedMetrics.map((m) => (
                     <td key={m.stock.id} className="py-1.5 px-3" />
                   ))}
                 </tr>
                 {activeMonths.map((monthIdx) => (
-                  <tr key={monthIdx} className="border-b border-gray-50">
-                    <td className="py-1 px-3 text-gray-400 text-xs pl-6 sticky left-0 bg-[#FAFAF8] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gray-200">
+                  <tr key={monthIdx} className="border-b border-[var(--color-border-light)]">
+                    <td className="py-1 px-3 text-[var(--color-text-muted)] text-[11px] pl-6 sticky left-0 bg-[var(--color-bg)] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-[var(--color-border)]">
                       {MONTH_LABELS[monthIdx]}
                     </td>
                     {sortedMetrics.map((m) => (
-                      <td key={m.stock.id} className="py-1 px-3 text-right tabular-nums text-gray-600 text-xs">
+                      <td key={m.stock.id} className="py-1 px-3 text-right tabular-nums text-[var(--color-text-secondary)] text-[11px]">
                         {m.monthlyDividends[monthIdx] > 0
                           ? formatCurrencyValue(m.monthlyDividends[monthIdx], m.ccy)
                           : '—'}
@@ -248,71 +293,109 @@ export default function StockPerformance({ accountType }: StockPerformanceProps)
             )}
 
             {/* Annual Total Dividends */}
-            <tr className="border-b border-gray-100 bg-emerald-100">
-              <td className="py-1.5 px-3 text-gray-600 font-medium sticky left-0 bg-emerald-100 z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gray-200">Annual Dividends</td>
+            <tr className="border-b border-[var(--color-border)] bg-green-100">
+              <td className="py-1.5 px-3 text-[var(--color-text-secondary)] font-medium sticky left-0 bg-green-100 z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-[var(--color-border)]">Annual Dividends</td>
               {sortedMetrics.map((m) => (
-                <td key={m.stock.id} className="py-1.5 px-3 text-right tabular-nums font-medium text-emerald-700">
+                <td key={m.stock.id} className="py-1.5 px-3 text-right tabular-nums font-medium text-[var(--color-positive)]">
                   {formatCurrencyValue(m.annualDividendTotal, m.ccy)}
                 </td>
               ))}
             </tr>
 
             {/* Stock Gain/Loss */}
-            <tr className="border-b border-gray-50">
-              <td className="py-1.5 px-3 text-gray-500 sticky left-0 bg-[#FAFAF8] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gray-200">Stock Gain/Loss</td>
+            <tr className="border-b border-[var(--color-border-light)]">
+              <td className="py-1.5 px-3 text-[var(--color-text-secondary)] sticky left-0 bg-[var(--color-bg)] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-[var(--color-border)]">Stock Gain/Loss</td>
               {sortedMetrics.map((m) => (
-                <td key={m.stock.id} className={`py-1.5 px-3 text-right tabular-nums ${m.stockGain >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
+                <td key={m.stock.id} className={`py-1.5 px-3 text-right tabular-nums ${m.stockGain >= 0 ? 'text-red-600' : 'text-blue-600'}`}>
                   {m.stockGain >= 0 ? '+' : ''}{formatCurrencyValue(m.stockGain, m.ccy)}
                 </td>
               ))}
             </tr>
 
             {/* Price Return % */}
-            <tr className="border-b border-gray-50 bg-gray-50">
-              <td className="py-1.5 px-3 text-gray-500 sticky left-0 bg-gray-50 z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gray-200">Price Return %</td>
+            <tr className="border-b border-[var(--color-border-light)] bg-[var(--color-bg-sidebar)]">
+              <td className="py-1.5 px-3 text-[var(--color-text-secondary)] sticky left-0 bg-[var(--color-bg-sidebar)] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-[var(--color-border)]">Price Return %</td>
               {sortedMetrics.map((m) => (
-                <td key={m.stock.id} className={`py-1.5 px-3 text-right tabular-nums font-medium ${m.priceReturnPct >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
+                <td key={m.stock.id} className={`py-1.5 px-3 text-right tabular-nums font-medium ${m.priceReturnPct >= 0 ? 'text-red-600' : 'text-blue-600'}`}>
                   {m.priceReturnPct >= 0 ? '+' : ''}{m.priceReturnPct.toFixed(2)}%
                 </td>
               ))}
             </tr>
 
             {/* YoC */}
-            <tr className="border-b border-gray-50">
-              <td className="py-1.5 px-3 text-gray-500 sticky left-0 bg-[#FAFAF8] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gray-200">YoC (Yield on Cost)</td>
+            <tr className="border-b border-[var(--color-border-light)]">
+              <td className="py-1.5 px-3 text-[var(--color-text-secondary)] sticky left-0 bg-[var(--color-bg)] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-[var(--color-border)]">YoC (Yield on Cost)</td>
               {sortedMetrics.map((m) => (
-                <td key={m.stock.id} className="py-1.5 px-3 text-right tabular-nums text-emerald-600">
+                <td key={m.stock.id} className="py-1.5 px-3 text-right tabular-nums text-[var(--color-positive)]">
                   {m.yoc.toFixed(2)}%
                 </td>
               ))}
             </tr>
 
             {/* RoC */}
-            <tr className="border-b border-gray-50 bg-gray-50">
-              <td className="py-1.5 px-3 text-gray-500 sticky left-0 bg-gray-50 z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gray-200">RoC (Return of Capital)</td>
+            <tr className="border-b border-[var(--color-border-light)] bg-[var(--color-bg-sidebar)]">
+              <td className="py-1.5 px-3 text-[var(--color-text-secondary)] sticky left-0 bg-[var(--color-bg-sidebar)] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-[var(--color-border)]">RoC (Annual)</td>
               {sortedMetrics.map((m) => (
-                <td key={m.stock.id} className="py-1.5 px-3 text-right tabular-nums text-emerald-600">
+                <td key={m.stock.id} className="py-1.5 px-3 text-right tabular-nums text-[var(--color-positive)]">
                   {m.roc.toFixed(2)}%
                 </td>
               ))}
             </tr>
 
-            {/* TR % */}
-            <tr className="border-b border-gray-50">
-              <td className="py-1.5 px-3 text-gray-500 sticky left-0 bg-[#FAFAF8] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gray-200">Total Return %</td>
+            {/* Total Revenue (Annual) */}
+            <tr className="border-b border-[var(--color-border)] bg-slate-100">
+              <td className="py-2 px-3 text-[var(--color-text)] font-medium sticky left-0 bg-slate-100 z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-slate-300">Total Revenue (Annual)</td>
               {sortedMetrics.map((m) => (
-                <td key={m.stock.id} className={`py-1.5 px-3 text-right tabular-nums font-medium ${m.trPct >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
-                  {m.trPct >= 0 ? '+' : ''}{m.trPct.toFixed(2)}%
+                <td key={m.stock.id} className={`py-2 px-3 text-right tabular-nums font-semibold ${m.totalRevenue >= 0 ? 'text-red-600' : 'text-blue-600'}`}>
+                  {m.totalRevenue >= 0 ? '+' : ''}{formatCurrencyValue(m.totalRevenue, m.ccy)}
                 </td>
               ))}
             </tr>
 
-            {/* Total Revenue */}
-            <tr className="border-t-2 border-gray-200 bg-gray-100">
-              <td className="py-2 px-3 text-gray-800 font-semibold sticky left-0 bg-gray-100 z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-gray-300">Total Revenue</td>
+            {/* Cumulative Section Header */}
+            <tr className="border-b border-[var(--color-border)] bg-violet-50">
+              <td className="py-1.5 px-3 text-violet-700 font-medium sticky left-0 bg-violet-50 z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-[var(--color-border)]">Cumulative (All-Time)</td>
               {sortedMetrics.map((m) => (
-                <td key={m.stock.id} className={`py-2 px-3 text-right tabular-nums font-bold text-base ${m.totalRevenue >= 0 ? 'text-red-600' : 'text-blue-600'}`}>
-                  {m.totalRevenue >= 0 ? '+' : ''}{formatCurrencyValue(m.totalRevenue, m.ccy)}
+                <td key={m.stock.id} className="py-1.5 px-3" />
+              ))}
+            </tr>
+
+            {/* Cumulative Dividends */}
+            <tr className="border-b border-[var(--color-border-light)]">
+              <td className="py-1.5 px-3 text-[var(--color-text-secondary)] pl-6 sticky left-0 bg-[var(--color-bg)] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-[var(--color-border)]">Total Dividends</td>
+              {sortedMetrics.map((m) => (
+                <td key={m.stock.id} className="py-1.5 px-3 text-right tabular-nums text-[var(--color-positive)] font-medium">
+                  {formatCurrencyValue(m.cumulativeDividendTotal, m.ccy)}
+                </td>
+              ))}
+            </tr>
+
+            {/* Cumulative RoC */}
+            <tr className="border-b border-[var(--color-border-light)] bg-[var(--color-bg-sidebar)]">
+              <td className="py-1.5 px-3 text-[var(--color-text-secondary)] pl-6 sticky left-0 bg-[var(--color-bg-sidebar)] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-[var(--color-border)]">RoC (Cumulative)</td>
+              {sortedMetrics.map((m) => (
+                <td key={m.stock.id} className="py-1.5 px-3 text-right tabular-nums text-violet-600 font-medium">
+                  {m.cumulativeRoc.toFixed(2)}%
+                </td>
+              ))}
+            </tr>
+
+            {/* Cumulative TR % */}
+            <tr className="border-b border-[var(--color-border-light)]">
+              <td className="py-1.5 px-3 text-[var(--color-text-secondary)] pl-6 sticky left-0 bg-[var(--color-bg)] z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-[var(--color-border)]">Total Return %</td>
+              {sortedMetrics.map((m) => (
+                <td key={m.stock.id} className={`py-1.5 px-3 text-right tabular-nums font-medium ${m.cumulativeTrPct >= 0 ? 'text-red-600' : 'text-blue-600'}`}>
+                  {m.cumulativeTrPct >= 0 ? '+' : ''}{m.cumulativeTrPct.toFixed(2)}%
+                </td>
+              ))}
+            </tr>
+
+            {/* Cumulative Total Revenue */}
+            <tr className="border-t-2 border-[var(--color-border)] bg-violet-100">
+              <td className="py-2 px-3 text-[var(--color-text)] font-semibold sticky left-0 bg-violet-100 z-10 relative after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-slate-300">Total Revenue (All-Time)</td>
+              {sortedMetrics.map((m) => (
+                <td key={m.stock.id} className={`py-2 px-3 text-right tabular-nums font-bold text-base ${m.cumulativeTotalRevenue >= 0 ? 'text-red-600' : 'text-blue-600'}`}>
+                  {m.cumulativeTotalRevenue >= 0 ? '+' : ''}{formatCurrencyValue(m.cumulativeTotalRevenue, m.ccy)}
                 </td>
               ))}
             </tr>

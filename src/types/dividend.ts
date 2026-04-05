@@ -11,6 +11,7 @@ export interface Dividend {
   dps: number; // Dividends per share
   currency: string;
   notes: string | null;
+  member_id: string | null;
   created_at: string;
   updated_at: string;
 }

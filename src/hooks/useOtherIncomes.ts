@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useFamilyContext } from './FamilyContext';
 import type { OtherIncome, OtherIncomeUpdate } from '@/types/income';
 
 function todayString(): string {
@@ -10,9 +11,22 @@ function todayString(): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+type WithMemberId = { member_id?: string | null };
+
+function filterByMember<T extends WithMemberId>(items: T[], memberId: string | 'all'): T[] {
+  if (memberId === 'all') return items;
+  return items.filter((item) => item.member_id === memberId);
+}
+
 export function useOtherIncomes() {
-  const [incomes, setIncomes] = useState<OtherIncome[]>([]);
+  const [allIncomes, setAllIncomes] = useState<OtherIncome[]>([]);
   const [loading, setLoading] = useState(true);
+  const { activeMemberId, selfMember } = useFamilyContext();
+
+  const incomes = useMemo(
+    () => filterByMember(allIncomes, activeMemberId),
+    [allIncomes, activeMemberId],
+  );
 
   const fetchIncomes = useCallback(async () => {
     const { data, error } = await supabase
@@ -24,7 +38,7 @@ export function useOtherIncomes() {
       console.error('Error fetching other incomes:', error.message);
       return;
     }
-    setIncomes(data || []);
+    setAllIncomes(data || []);
     setLoading(false);
   }, []);
 
@@ -32,9 +46,16 @@ export function useOtherIncomes() {
     fetchIncomes();
   }, [fetchIncomes]);
 
+  const getInsertMemberId = () => {
+    if (activeMemberId === 'all') return selfMember?.id ?? null;
+    return activeMemberId;
+  };
+
   const addIncome = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
+
+    const memberId = getInsertMemberId();
 
     const { data, error } = await supabase
       .from('other_incomes')
@@ -45,6 +66,7 @@ export function useOtherIncomes() {
         received_date: todayString(),
         amount: 0,
         currency: 'USD',
+        member_id: memberId,
       })
       .select()
       .single();
@@ -53,9 +75,9 @@ export function useOtherIncomes() {
       console.error('Error adding income:', error.message);
       return null;
     }
-    setIncomes((prev) => [data, ...prev]);
+    setAllIncomes((prev) => [data, ...prev]);
     return data as OtherIncome;
-  }, []);
+  }, [activeMemberId, selfMember]);
 
   const updateIncome = useCallback(async (id: string, updates: OtherIncomeUpdate) => {
     const { error } = await supabase
@@ -67,7 +89,7 @@ export function useOtherIncomes() {
       console.error('Error updating income:', error.message);
       return;
     }
-    setIncomes((prev) =>
+    setAllIncomes((prev) =>
       prev.map((i) => (i.id === id ? { ...i, ...updates } : i))
     );
   }, []);
@@ -82,7 +104,7 @@ export function useOtherIncomes() {
       console.error('Error deleting income:', error.message);
       return;
     }
-    setIncomes((prev) => prev.filter((i) => i.id !== id));
+    setAllIncomes((prev) => prev.filter((i) => i.id !== id));
   }, []);
 
   const totalIncome = useMemo(

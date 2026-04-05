@@ -9,6 +9,7 @@ export interface OtherIncome {
   amount: number;
   currency: string;
   notes: string | null;
+  member_id: string | null;
   created_at: string;
   updated_at: string;
 }

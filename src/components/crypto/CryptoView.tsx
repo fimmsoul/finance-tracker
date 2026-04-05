@@ -18,7 +18,7 @@ export default function CryptoView() {
 
   return (
     <div>
-      <h3 className="text-base font-semibold text-gray-800 mb-5">Crypto Holdings</h3>
+      <h3 className="text-base font-semibold text-[var(--color-text)] mb-5">Crypto Holdings</h3>
       <CryptoTable
         cryptos={cryptos}
         onAdd={addCrypto}

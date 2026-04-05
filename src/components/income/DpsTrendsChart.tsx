@@ -16,14 +16,14 @@ interface DpsTrendsChartProps {
 }
 
 const COLORS: Record<string, string> = {
-  emerald: '#10b981',
-  blue: '#3b82f6',
-  amber: '#f59e0b',
-  red: '#ef4444',
-  violet: '#8b5cf6',
-  pink: '#ec4899',
-  cyan: '#06b6d4',
-  lime: '#84cc16',
+  blue: '#2563EB',
+  slate: '#475569',
+  amber: '#D97706',
+  red: '#DC2626',
+  violet: '#7C3AED',
+  teal: '#0D9488',
+  cyan: '#0891B2',
+  green: '#16A34A',
 };
 
 const COLOR_LIST = Object.values(COLORS);
@@ -120,7 +120,7 @@ export default function DpsTrendsChart({ dividends }: DpsTrendsChartProps) {
 
   if (tickers.length === 0) {
     return (
-      <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
+      <div className="flex items-center justify-center h-48 text-[var(--color-text-muted)] text-[13px]">
         No dividend DPS data to display
       </div>
     );
@@ -133,12 +133,12 @@ export default function DpsTrendsChart({ dividends }: DpsTrendsChartProps) {
     <div>
       <div className="flex items-center justify-between mb-4">
         {activeTicker && chartData.length > 0 && (
-          <div className="flex items-center gap-3 text-xs">
-            <span className="text-gray-500">
-              Avg: <span className="font-medium text-gray-700">{formatCurrency(avgDps, activeCurrency)}</span>
+          <div className="flex items-center gap-3 text-[12px]">
+            <span className="text-[var(--color-text-secondary)]">
+              Avg: <span className="font-medium text-[var(--color-text)]">{formatCurrency(avgDps, activeCurrency)}</span>
             </span>
             {dpsChange !== null && (
-              <span className={dpsChange >= 0 ? 'text-emerald-600' : 'text-red-500'}>
+              <span className={dpsChange >= 0 ? 'text-[var(--color-positive)]' : 'text-[var(--color-negative)]'}>
                 {dpsChange >= 0 ? '+' : ''}{dpsChange.toFixed(1)}%
               </span>
             )}
@@ -146,11 +146,10 @@ export default function DpsTrendsChart({ dividends }: DpsTrendsChartProps) {
         )}
       </div>
 
-      {/* Ticker tabs */}
-      <div className="flex flex-wrap gap-1.5 mb-4 pb-3 border-b border-gray-100">
+      {/* Ticker tabs - segment control style */}
+      <div className="flex flex-wrap gap-1.5 mb-4 p-1 bg-[var(--color-bg-sidebar)] rounded-lg">
         {tickers.map((ticker, i) => {
           const isActive = ticker === activeTicker;
-          const color = COLOR_LIST[i % COLOR_LIST.length];
           const label = getTickerLabel(ticker);
           const fullName = tickerName[ticker] || ticker;
           return (
@@ -158,12 +157,11 @@ export default function DpsTrendsChart({ dividends }: DpsTrendsChartProps) {
               key={ticker}
               onClick={() => setSelectedTicker(ticker)}
               title={`${ticker}${fullName !== ticker ? ` — ${fullName}` : ''}`}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+              className={`px-3 py-1.5 text-[12px] font-medium rounded-md transition-all duration-200 cursor-pointer ${
                 isActive
-                  ? 'text-white shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'bg-white text-[var(--color-text)] shadow-[var(--shadow-xs)]'
+                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-white/50'
               }`}
-              style={isActive ? { backgroundColor: color } : undefined}
             >
               {label}
             </button>
@@ -175,31 +173,31 @@ export default function DpsTrendsChart({ dividends }: DpsTrendsChartProps) {
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 11, fill: '#9ca3af' }}
+              tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }}
               tickFormatter={(val) => {
                 const d = new Date(val);
                 return `${d.getFullYear().toString().slice(2)}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
               }}
-              axisLine={{ stroke: '#e5e7eb' }}
-              tickLine={{ stroke: '#e5e7eb' }}
+              axisLine={{ stroke: 'var(--color-border)' }}
+              tickLine={{ stroke: 'var(--color-border)' }}
             />
             <YAxis
-              tick={{ fontSize: 11, fill: '#9ca3af' }}
+              tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }}
               tickFormatter={(val) => formatCurrencyShort(val, activeCurrency)}
-              axisLine={{ stroke: '#e5e7eb' }}
-              tickLine={{ stroke: '#e5e7eb' }}
+              axisLine={{ stroke: 'var(--color-border)' }}
+              tickLine={{ stroke: 'var(--color-border)' }}
               domain={['auto', 'auto']}
             />
             <Tooltip
               contentStyle={{
                 backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
+                border: '1px solid var(--color-border)',
                 borderRadius: '8px',
                 fontSize: '12px',
-                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                boxShadow: 'var(--shadow-md)',
               }}
               formatter={(value) => [formatCurrency(value as number, activeCurrency), 'DPS']}
               labelFormatter={(label) => {
@@ -213,7 +211,7 @@ export default function DpsTrendsChart({ dividends }: DpsTrendsChartProps) {
             />
             <ReferenceLine
               y={avgDps}
-              stroke="#9ca3af"
+              stroke="var(--color-text-muted)"
               strokeDasharray="4 4"
               strokeWidth={1}
             />
@@ -230,7 +228,7 @@ export default function DpsTrendsChart({ dividends }: DpsTrendsChartProps) {
       </div>
 
       {/* Data points count */}
-      <div className="mt-3 text-xs text-gray-400 text-center">
+      <div className="mt-3 text-[11px] text-[var(--color-text-muted)] text-center">
         {chartData.length} dividend payment{chartData.length !== 1 ? 's' : ''} recorded
       </div>
     </div>

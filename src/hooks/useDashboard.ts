@@ -36,7 +36,7 @@ export function useDashboard() {
         id: s.id,
         source: 'stock',
         name: s.ticker
-          ? `${s.ticker}${s.name ? ' · ' + s.name : ''}${s.account_type === 'isa' ? ' (ISA)' : ''}`
+          ? `${s.ticker.toUpperCase()}${s.name ? ' · ' + s.name : ''}${s.account_type === 'isa' ? ' (ISA)' : ''}`
           : (s.name || 'Untitled Stock') + (s.account_type === 'isa' ? ' (ISA)' : ''),
         position: s.position || 'midfielder',
         nav,

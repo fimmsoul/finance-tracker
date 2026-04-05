@@ -9,7 +9,7 @@ export function Skeleton({ className }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'bg-gray-200/60 rounded animate-pulse',
+        'bg-[var(--color-border)] rounded animate-pulse',
         className,
       )}
     />
@@ -27,7 +27,7 @@ export function StockTableSkeleton() {
       </div>
 
       {/* Table header */}
-      <div className="flex items-center gap-3 border-b border-gray-200 pb-2 mb-1">
+      <div className="flex items-center gap-3 border-b border-[var(--color-border)] pb-2 mb-1">
         <Skeleton className="h-3 w-6" />
         <Skeleton className="h-3 w-16" />
         <Skeleton className="h-3 w-28" />
@@ -44,7 +44,7 @@ export function StockTableSkeleton() {
       {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-3 py-2.5 border-b border-gray-50"
+          className="flex items-center gap-3 py-2.5 border-b border-[var(--color-border-light)]"
           style={{ animationDelay: `${i * 80}ms` }}
         >
           <Skeleton className="h-4 w-6" />
@@ -61,7 +61,7 @@ export function StockTableSkeleton() {
       ))}
 
       {/* Footer totals */}
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200">
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-[var(--color-border)]">
         <Skeleton className="h-4 w-36" />
         <div className="flex items-center gap-6">
           <Skeleton className="h-4 w-28" />
@@ -76,7 +76,7 @@ export function StockTableSkeleton() {
 /** Skeleton for the performance summary table */
 export function PerformanceSkeleton() {
   return (
-    <div className="mt-8 pt-6 border-t border-gray-200">
+    <div className="mt-8 pt-6 border-t border-[var(--color-border)]">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <Skeleton className="h-4 w-44" />
@@ -86,7 +86,7 @@ export function PerformanceSkeleton() {
       {/* Table */}
       <div className="space-y-0">
         {/* Header row */}
-        <div className="flex items-center gap-4 border-b border-gray-200 pb-2 mb-1">
+        <div className="flex items-center gap-4 border-b border-[var(--color-border)] pb-2 mb-1">
           <Skeleton className="h-3 w-32" />
           <Skeleton className="h-3 w-20 ml-auto" />
           <Skeleton className="h-3 w-20" />
@@ -98,8 +98,8 @@ export function PerformanceSkeleton() {
           <div
             key={i}
             className={cn(
-              'flex items-center gap-4 py-2 border-b border-gray-50',
-              i % 2 === 1 && 'bg-gray-50/30',
+              'flex items-center gap-4 py-2 border-b border-[var(--color-border-light)]',
+              i % 2 === 1 && 'bg-[var(--color-border-light)]/30',
             )}
             style={{ animationDelay: `${i * 60}ms` }}
           >
@@ -111,7 +111,7 @@ export function PerformanceSkeleton() {
         ))}
 
         {/* Total row */}
-        <div className="flex items-center gap-4 py-2.5 border-t-2 border-gray-200 bg-gray-50 mt-1">
+        <div className="flex items-center gap-4 py-2.5 border-t-2 border-[var(--color-border)] bg-[var(--color-border-light)] mt-1">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-5 w-24 ml-auto" />
           <Skeleton className="h-5 w-24" />

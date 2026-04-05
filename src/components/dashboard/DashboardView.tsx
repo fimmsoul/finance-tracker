@@ -87,12 +87,12 @@ function DraggableRow({
   const weight = totalNAV > 0 ? (item.nav / totalNAV) * 100 : 0;
 
   return (
-    <tr ref={setNodeRef} style={style} className="border-b border-gray-50 hover:bg-gray-100/60 transition-colors group">
+    <tr ref={setNodeRef} style={style} className="border-b border-[var(--color-border-light)] hover:bg-slate-50 transition-colors duration-200 group">
       <td className="py-2 px-1">
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity touch-none"
+          className="cursor-grab active:cursor-grabbing text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity duration-200 touch-none"
           tabIndex={-1}
         >
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -100,25 +100,25 @@ function DraggableRow({
           </svg>
         </button>
       </td>
-      <td className="py-2 px-3 text-sm text-gray-800 truncate">{item.name}</td>
+      <td className="py-2 px-3 text-[13px] text-[var(--color-text)] truncate">{item.name}</td>
       <td className="py-2 px-3">
-        <span className="text-[10px] uppercase tracking-wider text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+        <span className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] bg-[var(--color-border-light)] px-1.5 py-0.5 rounded">
           {sourceLabels[item.source]}
         </span>
       </td>
-      <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-600 font-medium">
+      <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text-secondary)] font-medium">
         {weight.toFixed(1)}%
       </td>
-      <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-800">
+      <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text)]">
         {formatCurrencyValue(item.nav, displayCurrency)}
       </td>
-      <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-500">
+      <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text-secondary)]">
         {formatCurrencyValue(item.navKRW, 'KRW')}
       </td>
-      <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-500">
+      <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text-secondary)]">
         {formatCurrencyValue(item.cost, displayCurrency)}
       </td>
-      <td className={`py-2 px-3 text-right text-sm tabular-nums ${item.returnPct >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
+      <td className={`py-2 px-3 text-right text-[13px] tabular-nums ${item.returnPct >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
         {item.source === 'cash' ? '—' : `${item.returnPct >= 0 ? '+' : ''}${item.returnPct.toFixed(1)}%`}
       </td>
     </tr>
@@ -128,34 +128,34 @@ function DraggableRow({
 function OverlayRow({ item, totalNAV, displayCurrency }: { item: DashboardItem; totalNAV: number; displayCurrency: string }) {
   const weight = totalNAV > 0 ? (item.nav / totalNAV) * 100 : 0;
   return (
-    <table className="w-full table-fixed bg-white shadow-lg rounded-lg border border-gray-200">
+    <table className="w-full table-fixed bg-white shadow-[var(--shadow-md)] rounded-xl border border-[var(--color-border)]">
       <SharedColGroup />
       <tbody>
         <tr>
           <td className="py-2 px-1">
-            <svg className="w-3.5 h-3.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-3.5 h-3.5 text-[var(--color-text-muted)]" fill="currentColor" viewBox="0 0 20 20">
               <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
             </svg>
           </td>
-          <td className="py-2 px-3 text-sm text-gray-800 truncate">{item.name}</td>
+          <td className="py-2 px-3 text-[13px] text-[var(--color-text)] truncate">{item.name}</td>
           <td className="py-2 px-3">
-            <span className="text-[10px] uppercase tracking-wider text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+            <span className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] bg-[var(--color-border-light)] px-1.5 py-0.5 rounded">
               {sourceLabels[item.source]}
             </span>
           </td>
-          <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-600 font-medium">
+          <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text-secondary)] font-medium">
             {weight.toFixed(1)}%
           </td>
-          <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-800">
+          <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text)]">
             {formatCurrencyValue(item.nav, displayCurrency)}
           </td>
-          <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-500">
+          <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text-secondary)]">
             {formatCurrencyValue(item.navKRW, 'KRW')}
           </td>
-          <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-500">
+          <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text-secondary)]">
             {formatCurrencyValue(item.cost, displayCurrency)}
           </td>
-          <td className={`py-2 px-3 text-right text-sm tabular-nums ${item.returnPct >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
+          <td className={`py-2 px-3 text-right text-[13px] tabular-nums ${item.returnPct >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
             {item.source === 'cash' ? '—' : `${item.returnPct >= 0 ? '+' : ''}${item.returnPct.toFixed(1)}%`}
           </td>
         </tr>
@@ -190,22 +190,22 @@ function DroppableCategory({
   const categoryReturn = categoryCost > 0 ? ((categoryNav - categoryCost) / categoryCost) * 100 : 0;
 
   return (
-    <div className={`mb-6 rounded-lg transition-all ${isOver ? `ring-2 ${colors.border} ring-offset-1` : ''}`}>
+    <div className={`mb-6 rounded-xl border border-[var(--color-border)] bg-white shadow-[var(--shadow-card)] transition-all duration-200 ${isOver ? `ring-2 ${colors.border} ring-offset-1` : ''}`}>
       {/* Category Header */}
-      <div className={`flex items-center justify-between px-4 py-3 rounded-t-lg ${colors.bg}`}>
+      <div className={`flex items-center justify-between px-4 py-3 rounded-t-xl ${colors.bg}`}>
         <div className="flex items-center gap-3">
-          <span className={`text-sm font-semibold uppercase tracking-wider ${colors.text}`}>
+          <span className={`text-[13px] font-semibold uppercase tracking-wider ${colors.text}`}>
             {positionLabels[position]}
           </span>
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${colors.badge}`}>
+          <span className={`text-[12px] px-2 py-0.5 rounded-full font-medium ${colors.badge}`}>
             {categoryPct.toFixed(1)}%
           </span>
         </div>
-        <div className="flex items-center gap-4 text-xs">
+        <div className="flex items-center gap-4 text-[12px]">
           <span className={`tabular-nums font-medium ${colors.text}`}>
             {formatCurrencyValue(categoryNav, displayCurrency)}
           </span>
-          <span className="tabular-nums text-gray-400">
+          <span className="tabular-nums text-[var(--color-text-muted)]">
             {formatCurrencyValue(categoryNavKRW, 'KRW')}
           </span>
           <span className={`tabular-nums ${categoryReturn >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
@@ -219,22 +219,22 @@ function DroppableCategory({
         <table className="w-full table-fixed">
           <SharedColGroup />
           <thead>
-            <tr className="border-b border-gray-200 text-left">
+            <tr className="border-b border-[var(--color-border)] text-left">
               <th className="py-2 px-1"></th>
-              <th className="py-2 px-3 text-[10px] font-medium text-gray-400 uppercase tracking-wider">Asset</th>
-              <th className="py-2 px-3 text-[10px] font-medium text-gray-400 uppercase tracking-wider">Type</th>
-              <th className="py-2 px-3 text-[10px] font-medium text-gray-400 uppercase tracking-wider text-right">% of NAV</th>
-              <th className="py-2 px-3 text-[10px] font-medium text-gray-400 uppercase tracking-wider text-right">NAV ({displayCurrency})</th>
-              <th className="py-2 px-3 text-[10px] font-medium text-gray-400 uppercase tracking-wider text-right">NAV (KRW)</th>
-              <th className="py-2 px-3 text-[10px] font-medium text-gray-400 uppercase tracking-wider text-right">Cost</th>
-              <th className="py-2 px-3 text-[10px] font-medium text-gray-400 uppercase tracking-wider text-right">Return</th>
+              <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider">Asset</th>
+              <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider">Type</th>
+              <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">% of NAV</th>
+              <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">NAV ({displayCurrency})</th>
+              <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">NAV (KRW)</th>
+              <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">Cost</th>
+              <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">Return</th>
             </tr>
           </thead>
           <SortableContext items={items.map(itemKey)} strategy={verticalListSortingStrategy}>
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-4 text-center text-xs text-gray-300">
+                  <td colSpan={8} className="py-4 text-center text-[12px] text-[var(--color-text-muted)]">
                     Drag assets here
                   </td>
                 </tr>
@@ -347,7 +347,7 @@ export default function DashboardView() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-[var(--color-border)] border-t-[var(--color-primary)] rounded-full animate-spin" />
       </div>
     );
   }
@@ -363,15 +363,15 @@ export default function DashboardView() {
         <div className="flex items-start gap-10">
           {/* Total NAV */}
           <div>
-            <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-0.5">Total NAV</p>
+            <p className="text-[11px] text-[var(--color-text-muted)] uppercase tracking-widest mb-0.5">Total NAV</p>
             <div className="flex items-baseline gap-3">
-              <p className="text-3xl font-light text-gray-800 tabular-nums">
+              <p className="text-3xl font-light text-[var(--color-text)] tabular-nums">
                 {formatCurrencyValue(totalNAV, displayCurrency)}
               </p>
-              <span className="text-sm text-gray-400 tabular-nums">
+              <span className="text-[13px] text-[var(--color-text-muted)] tabular-nums">
                 {formatCurrencyValue(totalNAVKRW, 'KRW')}
               </span>
-              <span className={`text-sm tabular-nums ${totalReturn >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
+              <span className={`text-[13px] tabular-nums ${totalReturn >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
                 {totalReturn >= 0 ? '+' : ''}{totalReturn.toFixed(1)}%
               </span>
             </div>
@@ -379,13 +379,13 @@ export default function DashboardView() {
           {/* Exchange Rate */}
           {rates.KRW && (
             <div>
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-0.5">USD / KRW</p>
+              <p className="text-[11px] text-[var(--color-text-muted)] uppercase tracking-widest mb-0.5">USD / KRW</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-light text-gray-800 tabular-nums">
-                  ₩{rates.KRW.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
+                <p className="text-3xl font-light text-[var(--color-text)] tabular-nums">
+                  {rates.KRW.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
                 </p>
                 {lastUpdated && (
-                  <span className="text-xs text-gray-300">
+                  <span className="text-[11px] text-[var(--color-text-muted)]">
                     {new Date(lastUpdated).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </span>
                 )}
@@ -394,23 +394,23 @@ export default function DashboardView() {
           )}
         </div>
         {/* Currency Toggle */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-0">
           <button
             onClick={() => setDisplayCurrency('USD')}
-            className={`px-3 py-1.5 text-xs rounded-l-md border transition-colors cursor-pointer ${
+            className={`px-3 py-1.5 text-[12px] font-medium rounded-l-lg border transition-colors duration-200 cursor-pointer ${
               isUSD
-                ? 'bg-gray-800 text-white border-gray-800'
-                : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
+                : 'bg-white text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-slate-50'
             }`}
           >
             $ USD
           </button>
           <button
             onClick={() => setDisplayCurrency('KRW')}
-            className={`px-3 py-1.5 text-xs rounded-r-md border -ml-2 transition-colors cursor-pointer ${
+            className={`px-3 py-1.5 text-[12px] font-medium rounded-r-lg border -ml-px transition-colors duration-200 cursor-pointer ${
               !isUSD
-                ? 'bg-gray-800 text-white border-gray-800'
-                : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
+                : 'bg-white text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-slate-50'
             }`}
           >
             ₩ KRW
@@ -419,19 +419,19 @@ export default function DashboardView() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex items-center gap-1 mb-6 border-b border-gray-200">
+      <div className="flex items-center gap-1 mb-6 border-b border-[var(--color-border)]">
         {/* Fixed tab: Position Allocation */}
         <button
           onClick={() => setActiveTab('position')}
-          className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
+          className={`px-4 py-2.5 text-[13px] font-medium transition-colors duration-200 relative cursor-pointer ${
             activeTab === 'position'
-              ? 'text-gray-800'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'text-[var(--color-text)]'
+              : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'
           }`}
         >
           Position Allocation
           {activeTab === 'position' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-800" />
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--color-primary)]" />
           )}
         </button>
 
@@ -460,7 +460,7 @@ export default function DashboardView() {
                     setEditingTabId(null);
                   }
                 }}
-                className="px-2 py-1.5 text-sm font-medium border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[80px]"
+                className="px-2 py-1.5 text-[13px] font-medium border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] min-w-[80px]"
                 autoFocus
               />
             ) : (
@@ -470,15 +470,15 @@ export default function DashboardView() {
                   setEditingTabId(view.id);
                   setEditingName(view.name);
                 }}
-                className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
+                className={`px-4 py-2.5 text-[13px] font-medium transition-colors duration-200 relative cursor-pointer ${
                   activeTab === view.id
-                    ? 'text-gray-800'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'text-[var(--color-text)]'
+                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'
                 }`}
               >
                 {view.name}
                 {activeTab === view.id && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-800" />
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--color-primary)]" />
                 )}
               </button>
             )}
@@ -494,9 +494,11 @@ export default function DashboardView() {
                     }
                   }
                 }}
-                className="absolute -top-1 -right-1 w-4 h-4 bg-gray-400 hover:bg-red-500 text-white rounded-full text-[10px] leading-none opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                className="absolute -top-1 -right-1 w-4 h-4 bg-[var(--color-text-muted)] hover:bg-[var(--color-negative)] text-white rounded-full text-[10px] leading-none opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center cursor-pointer"
               >
-                ×
+                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             )}
           </div>
@@ -512,7 +514,7 @@ export default function DashboardView() {
               setEditingName(newView.name);
             }
           }}
-          className="px-3 py-2.5 text-gray-400 hover:text-gray-600 transition-colors"
+          className="px-3 py-2.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors duration-200 cursor-pointer"
           title="Add new portfolio tab"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -528,7 +530,7 @@ export default function DashboardView() {
         <>
           {/* Allocation Bar */}
       <div className="mb-6">
-        <div className="flex h-4 rounded-full overflow-hidden bg-gray-100">
+        <div className="flex h-4 rounded-full overflow-hidden bg-[var(--color-border-light)]">
           {categoryStats.attacker.pct > 0 && (
             <div
               className="bg-red-400 transition-all duration-500 flex items-center justify-center"
@@ -563,15 +565,15 @@ export default function DashboardView() {
         <div className="flex items-center gap-4 mt-2">
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
-            <span className="text-[10px] text-gray-400">Attacker</span>
+            <span className="text-[11px] text-[var(--color-text-muted)]">Attacker</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-            <span className="text-[10px] text-gray-400">Midfielder</span>
+            <span className="text-[11px] text-[var(--color-text-muted)]">Midfielder</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-blue-400" />
-            <span className="text-[10px] text-gray-400">Defender</span>
+            <span className="text-[11px] text-[var(--color-text-muted)]">Defender</span>
           </div>
         </div>
       </div>

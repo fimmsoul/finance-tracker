@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useFamilyContext } from './FamilyContext';
 import type { Dividend, DividendUpdate } from '@/types/dividend';
 import type { Stock } from '@/types/stock';
 
@@ -11,19 +12,38 @@ function todayString(): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-export function useDividends() {
-  const [dividends, setDividends] = useState<Dividend[]>([]);
-  const [stocks, setStocks] = useState<Stock[]>([]);
-  const [loading, setLoading] = useState(true);
+type WithMemberId = { member_id?: string | null };
 
-  // Build a lookup map: stock_id → { ticker, name }
+function filterByMember<T extends WithMemberId>(items: T[], memberId: string | 'all'): T[] {
+  if (memberId === 'all') return items;
+  return items.filter((item) => item.member_id === memberId);
+}
+
+export function useDividends() {
+  const [allDividends, setAllDividends] = useState<Dividend[]>([]);
+  const [allStocks, setAllStocks] = useState<Stock[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stocksLoaded, setStocksLoaded] = useState(false);
+  const { activeMemberId, selfMember } = useFamilyContext();
+
+  // Filtered by active member
+  const dividends = useMemo(
+    () => filterByMember(allDividends, activeMemberId),
+    [allDividends, activeMemberId],
+  );
+  const stocks = useMemo(
+    () => filterByMember(allStocks, activeMemberId),
+    [allStocks, activeMemberId],
+  );
+
+  // Build a lookup map: stock_id -> { ticker, name }
   const stockMap = useMemo(() => {
     const map: Record<string, { ticker: string; name: string | null }> = {};
-    for (const s of stocks) {
+    for (const s of allStocks) {
       map[s.id] = { ticker: s.ticker, name: s.name };
     }
     return map;
-  }, [stocks]);
+  }, [allStocks]);
 
   // Enrich dividends with stock info
   const enrichedDividends = useMemo(() => {
@@ -45,9 +65,11 @@ export function useDividends() {
 
     if (error) {
       console.error('Error fetching stocks for dividends:', error.message);
+      setStocksLoaded(true);
       return;
     }
-    setStocks(data || []);
+    setAllStocks(data || []);
+    setStocksLoaded(true);
   }, []);
 
   const fetchDividends = useCallback(async () => {
@@ -60,7 +82,7 @@ export function useDividends() {
       console.error('Error fetching dividends:', error.message);
       return;
     }
-    setDividends(data || []);
+    setAllDividends(data || []);
     setLoading(false);
   }, []);
 
@@ -69,13 +91,18 @@ export function useDividends() {
     fetchDividends();
   }, [fetchStocks, fetchDividends]);
 
+  const getInsertMemberId = () => {
+    if (activeMemberId === 'all') return selfMember?.id ?? null;
+    return activeMemberId;
+  };
+
   const addDividend = useCallback(async (stockId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
-    // Find the stock's currency to use as default
-    const stock = stocks.find((s) => s.id === stockId);
+    const stock = allStocks.find((s) => s.id === stockId);
     const currency = stock?.currency || 'USD';
+    const memberId = getInsertMemberId();
 
     const { data, error } = await supabase
       .from('dividends')
@@ -87,6 +114,7 @@ export function useDividends() {
         foreign_tax: 0,
         dps: 0,
         currency,
+        member_id: memberId,
       })
       .select()
       .single();
@@ -95,9 +123,9 @@ export function useDividends() {
       console.error('Error adding dividend:', error.message);
       return null;
     }
-    setDividends((prev) => [data, ...prev]);
+    setAllDividends((prev) => [data, ...prev]);
     return data as Dividend;
-  }, [stocks]);
+  }, [allStocks, activeMemberId, selfMember]);
 
   const updateDividend = useCallback(async (id: string, updates: DividendUpdate) => {
     const { error } = await supabase
@@ -109,7 +137,7 @@ export function useDividends() {
       console.error('Error updating dividend:', error.message);
       return;
     }
-    setDividends((prev) =>
+    setAllDividends((prev) =>
       prev.map((d) => (d.id === id ? { ...d, ...updates } : d))
     );
   }, []);
@@ -124,7 +152,7 @@ export function useDividends() {
       console.error('Error deleting dividend:', error.message);
       return;
     }
-    setDividends((prev) => prev.filter((d) => d.id !== id));
+    setAllDividends((prev) => prev.filter((d) => d.id !== id));
   }, []);
 
   const totalDividends = useMemo(
@@ -136,6 +164,7 @@ export function useDividends() {
     dividends: enrichedDividends,
     stocks,
     loading,
+    stocksLoaded,
     addDividend,
     updateDividend,
     deleteDividend,

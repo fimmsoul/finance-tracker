@@ -16,8 +16,12 @@ publish:
 
 mac:
   category: public.app-category.finance
+  artifactName: "Finance-Tracker-${version}-${arch}.${ext}"
   target:
     - target: dmg
+      arch:
+        - universal
+    - target: zip
       arch:
         - universal
   protocols:

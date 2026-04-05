@@ -10,6 +10,7 @@ export interface Crypto {
   notes: string | null;
   position: 'attacker' | 'midfielder' | 'defender';
   sort_order: number;
+  member_id: string | null;
   created_at: string;
   updated_at: string;
 }
