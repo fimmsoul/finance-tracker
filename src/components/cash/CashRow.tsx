@@ -26,7 +26,7 @@ export default function CashRow({ account, onUpdate, onDelete, isNew }: CashRowP
   const displayBalance = convert(account.balance, account.currency);
 
   return (
-    <tr className="border-b border-gray-50 hover:bg-gray-100/60 transition-colors group">
+    <tr className="border-b border-[var(--color-border-light)] hover:bg-[var(--color-border-light)]/60 transition-colors duration-200 group">
       <td className="py-1.5 px-2">
         <EditableCell
           value={account.name}
@@ -58,7 +58,7 @@ export default function CashRow({ account, onUpdate, onDelete, isNew }: CashRowP
           displayValue={formatCurrencyValue(account.balance, account.currency)}
         />
       </td>
-      <td className="py-1.5 px-2 w-32 text-right text-sm tabular-nums text-gray-400">
+      <td className="py-1.5 px-2 w-32 text-right text-[13px] tabular-nums text-[var(--color-text-muted)]">
         {account.currency !== displayCurrency && formatCurrencyValue(displayBalance, displayCurrency)}
       </td>
       <td className="py-1.5 px-2">
@@ -66,7 +66,7 @@ export default function CashRow({ account, onUpdate, onDelete, isNew }: CashRowP
           value={account.notes || ''}
           onSave={(v) => onUpdate(account.id, { notes: v || null })}
           placeholder="Notes"
-          className="text-gray-400"
+          className="text-[var(--color-text-muted)]"
         />
       </td>
       <td className="py-1.5 px-2 w-10">
@@ -74,13 +74,13 @@ export default function CashRow({ account, onUpdate, onDelete, isNew }: CashRowP
           <div className="flex gap-1">
             <button
               onClick={() => { onDelete(account.id); setConfirming(false); }}
-              className="text-xs text-red-500 hover:text-red-700 cursor-pointer"
+              className="text-[11px] text-[var(--color-negative)] hover:text-red-700 cursor-pointer transition-colors duration-200"
             >
               Yes
             </button>
             <button
               onClick={() => setConfirming(false)}
-              className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer"
+              className="text-[11px] text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] cursor-pointer transition-colors duration-200"
             >
               No
             </button>
@@ -88,7 +88,7 @@ export default function CashRow({ account, onUpdate, onDelete, isNew }: CashRowP
         ) : (
           <button
             onClick={() => setConfirming(true)}
-            className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all cursor-pointer"
+            className="opacity-0 group-hover:opacity-100 text-[var(--color-text-muted)] hover:text-[var(--color-negative)] transition-all duration-200 cursor-pointer"
             title="Delete"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

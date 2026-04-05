@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useDataContext } from './DataContext';
 import { useCurrencyContext } from './CurrencyContext';
+import { useFamilyContext } from './FamilyContext';
 import type { DailySnapshot } from '@/types/snapshot';
 import type { Stock } from '@/types/stock';
 import type { CashAccount } from '@/types/cash';
@@ -16,33 +17,13 @@ function todayString(): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-function dateToString(d: Date): string {
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
+type WithMemberId = { member_id?: string | null };
+
+function filterByMember<T extends WithMemberId>(items: T[], memberId: string | null): T[] {
+  if (memberId === null) return items; // null = all combined
+  return items.filter((item) => item.member_id === memberId);
 }
 
-function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr + 'T00:00:00');
-  d.setDate(d.getDate() + days);
-  return dateToString(d);
-}
-
-function getMissingDates(lastDate: string, today: string): string[] {
-  const missing: string[] = [];
-  let current = addDays(lastDate, 1);
-  while (current < today) {
-    missing.push(current);
-    current = addDays(current, 1);
-  }
-  return missing;
-}
-
-/**
- * Computes totals in USD using the same convertBetween used by Dashboard.
- * Reads from shared in-memory state — no Supabase fetch.
- */
 function computeTotals(
   allStocks: Stock[],
   accounts: CashAccount[],
@@ -66,12 +47,10 @@ function computeTotals(
   let realEstateTotal = 0;
   let otherAssetsTotal = 0;
 
-  // Include crypto from dedicated crypto table
   for (const c of cryptos) {
     cryptoTotal += convertBetween(c.quantity * c.current_price, c.currency, 'USD');
   }
 
-  // Include assets by category
   for (const a of assets) {
     const usdValue = convertBetween(a.current_value, a.currency, 'USD');
     switch (a.category) {
@@ -106,18 +85,54 @@ function computeTotals(
   };
 }
 
-/**
- * @param dataVersion - bump counter from DataContext; when it changes, today's snapshot is re-recorded
- * @param ratesLastUpdated - ISO string of when rates were last fetched; triggers re-record on rate refresh
- */
+/** Upsert a single snapshot row (insert or update) */
+async function upsertSnapshot(
+  userId: string,
+  today: string,
+  memberId: string | null,
+  totals: ReturnType<typeof computeTotals>,
+) {
+  let existingQuery = supabase
+    .from('daily_snapshots')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('snapshot_date', today);
+
+  if (memberId) {
+    existingQuery = existingQuery.eq('member_id', memberId);
+  } else {
+    existingQuery = existingQuery.is('member_id', null);
+  }
+
+  const { data: existing } = await existingQuery.maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase
+      .from('daily_snapshots')
+      .update(totals)
+      .eq('id', existing.id);
+    if (error) console.error('Error updating snapshot:', error.message);
+  } else {
+    const { error } = await supabase
+      .from('daily_snapshots')
+      .insert({
+        user_id: userId,
+        snapshot_date: today,
+        member_id: memberId,
+        ...totals,
+      });
+    if (error) console.error('Error inserting snapshot:', error.message);
+  }
+}
+
 export function useDailySnapshots(
   dataVersion: number = 0,
   ratesLastUpdated: string | null = null,
 ) {
   const { generalStocks, isaStocks, accounts, assets, cryptos, stocksLoading, cashLoading, assetsLoading, cryptosLoading } = useDataContext();
   const { convertBetween, rates } = useCurrencyContext();
+  const { activeMemberId, members } = useFamilyContext();
 
-  // 모든 데이터가 로드되었는지 확인
   const dataReady = !stocksLoading && !cashLoading && !assetsLoading && !cryptosLoading;
 
   const [snapshots, setSnapshots] = useState<DailySnapshot[]>([]);
@@ -125,77 +140,108 @@ export function useDailySnapshots(
   const initialRecordDone = useRef(false);
   const prevRatesUpdated = useRef<string | null>(null);
 
-  const allStocks = [...generalStocks, ...isaStocks];
+  // All stocks combined (unfiltered — from DataContext which already gives filtered views)
+  // We need raw ALL data for recording all members. Access via context's filtered data
+  // by using generalStocks/isaStocks which are filtered by activeMemberId.
+  // For recordAllSnapshots we need the raw data, so we'll fetch from DataContext's raw.
+  // Actually DataContext exposes filtered views. Let's use supabase directly for the full record.
 
+  const allStocksForView = [...generalStocks, ...isaStocks];
+
+  // Fetch snapshots filtered by active member (for display)
   const fetchSnapshots = useCallback(async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from('daily_snapshots')
       .select('*')
       .order('snapshot_date', { ascending: false });
 
+    if (activeMemberId === 'all') {
+      query = query.is('member_id', null);
+    } else {
+      query = query.eq('member_id', activeMemberId);
+    }
+
+    const { data, error } = await query;
     if (error) {
       console.error('Error fetching snapshots:', error.message);
     } else {
       setSnapshots(data || []);
     }
     setLoading(false);
-  }, []);
+  }, [activeMemberId]);
 
-  // Upsert today's snapshot and fill any missing dates
+  // Record today's snapshot for the CURRENT active member only (used for debounced updates)
   const recordToday = useCallback(async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     const today = todayString();
-    const totals = computeTotals(allStocks, accounts, assets, cryptos, convertBetween);
+    const totals = computeTotals(allStocksForView, accounts, assets, cryptos, convertBetween);
+    const memberId = activeMemberId === 'all' ? null : activeMemberId;
 
-    // 오늘 스냅샷 기록 (현재 계산된 값)
-    const { error } = await supabase
-      .from('daily_snapshots')
-      .upsert(
-        {
-          user_id: user.id,
-          snapshot_date: today,
-          ...totals,
-        },
-        { onConflict: 'user_id,snapshot_date' },
-      );
+    await upsertSnapshot(user.id, today, memberId, totals);
+    await fetchSnapshots();
+  }, [allStocksForView, accounts, assets, cryptos, convertBetween, fetchSnapshots, activeMemberId]);
 
-    if (error) {
-      console.error('Error recording snapshot:', error.message);
-    } else {
-      await fetchSnapshots();
+  // Record today's snapshot for ALL members + combined (used on app open / rate refresh)
+  const recordAllSnapshots = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const today = todayString();
+
+    // Fetch ALL raw data (unfiltered) for snapshot computation
+    const [stocksRes, cashRes, assetsRes, cryptosRes] = await Promise.all([
+      supabase.from('stocks').select('*').eq('user_id', user.id),
+      supabase.from('cash_accounts').select('*').eq('user_id', user.id),
+      supabase.from('assets').select('*').eq('user_id', user.id),
+      supabase.from('cryptos').select('*').eq('user_id', user.id),
+    ]);
+
+    const rawStocks = (stocksRes.data || []) as Stock[];
+    const rawCash = (cashRes.data || []) as CashAccount[];
+    const rawAssets = (assetsRes.data || []) as Asset[];
+    const rawCryptos = (cryptosRes.data || []) as Crypto[];
+
+    // 1) Record combined (ALL) snapshot — member_id = NULL
+    const combinedTotals = computeTotals(rawStocks, rawCash, rawAssets, rawCryptos, convertBetween);
+    await upsertSnapshot(user.id, today, null, combinedTotals);
+
+    // 2) Record per-member snapshots
+    for (const member of members) {
+      const mStocks = filterByMember(rawStocks, member.id);
+      const mCash = filterByMember(rawCash, member.id);
+      const mAssets = filterByMember(rawAssets, member.id);
+      const mCryptos = filterByMember(rawCryptos, member.id);
+      const memberTotals = computeTotals(mStocks, mCash, mAssets, mCryptos, convertBetween);
+      await upsertSnapshot(user.id, today, member.id, memberTotals);
     }
-  }, [allStocks, accounts, assets, cryptos, convertBetween, fetchSnapshots]);
 
-  const deleteSnapshot = useCallback(
-    async (id: string) => {
-      const { error } = await supabase.from('daily_snapshots').delete().eq('id', id);
-      if (error) {
-        console.error('Error deleting snapshot:', error.message);
-        return;
-      }
-      setSnapshots((prev) => prev.filter((s) => s.id !== id));
-    },
-    [],
-  );
+    await fetchSnapshots();
+  }, [members, convertBetween, fetchSnapshots]);
+
+  const deleteSnapshot = useCallback(async (id: string) => {
+    const { error } = await supabase.from('daily_snapshots').delete().eq('id', id);
+    if (error) {
+      console.error('Error deleting snapshot:', error.message);
+      return;
+    }
+    setSnapshots((prev) => prev.filter((s) => s.id !== id));
+  }, []);
 
   useEffect(() => {
     fetchSnapshots();
   }, [fetchSnapshots]);
 
-  // Always upsert today's snapshot on app open (with latest rates)
-  // 환율과 자산 데이터가 모두 로드된 후에만 기록
+  // Record ALL snapshots on app open
   useEffect(() => {
-    if (!loading && dataReady && rates && Object.keys(rates).length > 1 && !initialRecordDone.current) {
+    if (!loading && dataReady && rates && Object.keys(rates).length > 1 && members.length > 0 && !initialRecordDone.current) {
       initialRecordDone.current = true;
-      recordToday();
+      recordAllSnapshots();
     }
-  }, [loading, dataReady, rates, recordToday]);
+  }, [loading, dataReady, rates, members, recordAllSnapshots]);
 
-  // Re-record when exchange rates refresh (6-hour boundary)
+  // Re-record all when exchange rates refresh
   useEffect(() => {
     if (!ratesLastUpdated || !dataReady) return;
     if (prevRatesUpdated.current === null) {
@@ -204,11 +250,11 @@ export function useDailySnapshots(
     }
     if (prevRatesUpdated.current !== ratesLastUpdated) {
       prevRatesUpdated.current = ratesLastUpdated;
-      recordToday();
+      recordAllSnapshots();
     }
-  }, [ratesLastUpdated, dataReady, recordToday]);
+  }, [ratesLastUpdated, dataReady, recordAllSnapshots]);
 
-  // Auto-update today's snapshot when data changes (debounced)
+  // Auto-update current member on data change (debounced)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (dataVersion === 0) return;
@@ -216,17 +262,15 @@ export function useDailySnapshots(
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      recordToday();
+      recordAllSnapshots();
     }, 1500);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [dataVersion, dataReady, rates, recordToday]);
+  }, [dataVersion, dataReady, rates, recordAllSnapshots]);
 
-  // Live-computed totals for today (same data + same convertBetween as Dashboard)
-  // DailySnapshotTable uses this for today's column to guarantee match with Dashboard
-  const todayLiveTotals = computeTotals(allStocks, accounts, assets, cryptos, convertBetween);
+  const todayLiveTotals = computeTotals(allStocksForView, accounts, assets, cryptos, convertBetween);
 
   return { snapshots, loading, recordToday, deleteSnapshot, todayLiveTotals };
 }

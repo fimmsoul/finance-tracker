@@ -31,7 +31,7 @@ export default function AssetRow({ asset, onUpdate, onDelete, isNew }: AssetRowP
   const displayValue = convert(asset.current_value, asset.currency);
 
   return (
-    <tr className="border-b border-gray-50 hover:bg-gray-100/60 transition-colors group">
+    <tr className="border-b border-[var(--color-border-light)] hover:bg-[var(--color-border-light)]/60 transition-colors duration-200 group">
       <td className="py-1.5 px-2">
         <EditableCell
           value={asset.name}
@@ -73,16 +73,16 @@ export default function AssetRow({ asset, onUpdate, onDelete, isNew }: AssetRowP
           displayValue={formatCurrencyValue(asset.current_value, asset.currency)}
         />
       </td>
-      <td className="py-1.5 px-2 w-32 text-right text-sm tabular-nums">
+      <td className="py-1.5 px-2 w-32 text-right text-[13px] tabular-nums text-[var(--color-text)]">
         {formatCurrencyValue(displayValue, displayCurrency)}
       </td>
-      <td className="py-1.5 px-2 w-28 text-right text-sm tabular-nums">
+      <td className="py-1.5 px-2 w-28 text-right text-[13px] tabular-nums">
         {displayGain != null ? (
-          <span className={displayGain >= 0 ? 'text-emerald-600' : 'text-red-500'}>
+          <span className={displayGain >= 0 ? 'text-[var(--color-positive)]' : 'text-[var(--color-negative)]'}>
             {displayGain >= 0 ? '+' : ''}{formatCurrencyValue(displayGain, displayCurrency)}
           </span>
         ) : (
-          <span className="text-gray-300">-</span>
+          <span className="text-[var(--color-text-muted)]">-</span>
         )}
       </td>
       <td className="py-1.5 px-2">
@@ -90,7 +90,7 @@ export default function AssetRow({ asset, onUpdate, onDelete, isNew }: AssetRowP
           value={asset.notes || ''}
           onSave={(v) => onUpdate(asset.id, { notes: v || null })}
           placeholder="Notes"
-          className="text-gray-400"
+          className="text-[var(--color-text-muted)]"
         />
       </td>
       <td className="py-1.5 px-2 w-10">
@@ -98,13 +98,13 @@ export default function AssetRow({ asset, onUpdate, onDelete, isNew }: AssetRowP
           <div className="flex gap-1">
             <button
               onClick={() => { onDelete(asset.id); setConfirming(false); }}
-              className="text-xs text-red-500 hover:text-red-700 cursor-pointer"
+              className="text-[11px] text-[var(--color-negative)] hover:text-red-700 cursor-pointer transition-colors duration-200"
             >
               Yes
             </button>
             <button
               onClick={() => setConfirming(false)}
-              className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer"
+              className="text-[11px] text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] cursor-pointer transition-colors duration-200"
             >
               No
             </button>
@@ -112,7 +112,7 @@ export default function AssetRow({ asset, onUpdate, onDelete, isNew }: AssetRowP
         ) : (
           <button
             onClick={() => setConfirming(true)}
-            className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all cursor-pointer"
+            className="opacity-0 group-hover:opacity-100 text-[var(--color-text-muted)] hover:text-[var(--color-negative)] transition-all duration-200 cursor-pointer"
             title="Delete"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

@@ -140,14 +140,14 @@ export default function CryptoTable({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           {refreshStatus && (
-            <span className="text-xs text-gray-400 animate-fade-in">{refreshStatus}</span>
+            <span className="text-[11px] text-[var(--color-text-muted)] animate-fade-in">{refreshStatus}</span>
           )}
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleRefreshPrices}
             disabled={refreshing || cryptos.length === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-sky-600 hover:text-sky-700 bg-sky-50 hover:bg-sky-100 rounded-md transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] bg-[var(--color-primary-light)] hover:bg-blue-100 rounded-lg transition-colors duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <svg
               className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`}
@@ -166,7 +166,7 @@ export default function CryptoTable({
           </button>
           <button
             onClick={handleAdd}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-md transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] bg-[var(--color-primary-light)] hover:bg-blue-100 rounded-lg transition-colors duration-200 cursor-pointer"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -177,7 +177,7 @@ export default function CryptoTable({
       </div>
 
       {cryptos.length === 0 ? (
-        <div className="text-center py-12 text-gray-300 text-sm">
+        <div className="text-center py-12 text-[var(--color-text-muted)] text-[13px]">
           No cryptocurrencies yet. Click + Add Crypto to get started.
         </div>
       ) : (
@@ -190,17 +190,17 @@ export default function CryptoTable({
           >
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200 text-left">
+                <tr className="border-b border-[var(--color-border)] text-left">
                   <th className="py-2 px-1 w-8"></th>
-                  <th className="py-2 px-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Symbol</th>
-                  <th className="py-2 px-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
-                  <th className="py-2 px-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Ccy</th>
-                  <th className="py-2 px-2 text-xs font-medium text-gray-400 uppercase tracking-wider text-right">Qty</th>
-                  <th className="py-2 px-2 text-xs font-medium text-gray-400 uppercase tracking-wider text-right">Buy Price</th>
-                  <th className="py-2 px-2 text-xs font-medium text-gray-400 uppercase tracking-wider text-right">Current</th>
-                  <th className="py-2 px-2 text-xs font-medium text-gray-400 uppercase tracking-wider text-right">Value (USD)</th>
-                  <th className="py-2 px-2 text-xs font-medium text-gray-400 uppercase tracking-wider text-right">Value (KRW)</th>
-                  <th className="py-2 px-2 text-xs font-medium text-gray-400 uppercase tracking-wider text-right">Gain/Loss</th>
+                  <th className="py-2 px-2 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider">Symbol</th>
+                  <th className="py-2 px-2 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider">Name</th>
+                  <th className="py-2 px-2 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider">Ccy</th>
+                  <th className="py-2 px-2 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">Qty</th>
+                  <th className="py-2 px-2 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">Buy Price</th>
+                  <th className="py-2 px-2 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">Current</th>
+                  <th className="py-2 px-2 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">Value (USD)</th>
+                  <th className="py-2 px-2 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">Value (KRW)</th>
+                  <th className="py-2 px-2 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">Gain/Loss</th>
                   <th className="py-2 px-2 w-10"></th>
                 </tr>
               </thead>
@@ -220,22 +220,22 @@ export default function CryptoTable({
             </table>
           </DndContext>
 
-          <div className="mt-4 pt-3 border-t border-gray-200 flex items-center justify-between text-sm">
-            <div className="text-gray-500">
-              Total Cost: <span className="tabular-nums font-medium text-gray-700">{formatCurrencyValue(totalCost, 'USD')}</span>
+          <div className="mt-4 pt-3 border-t border-[var(--color-border)] flex items-center justify-between text-[13px]">
+            <div className="text-[var(--color-text-secondary)]">
+              Total Cost: <span className="tabular-nums font-medium text-[var(--color-text)]">{formatCurrencyValue(totalCost, 'USD')}</span>
             </div>
             <div className="flex items-center gap-6">
-              <div className="text-gray-500">
-                USD: <span className="tabular-nums font-medium text-gray-700">{formatCurrencyValue(totalValue, 'USD')}</span>
+              <div className="text-[var(--color-text-secondary)]">
+                USD: <span className="tabular-nums font-medium text-[var(--color-text)]">{formatCurrencyValue(totalValue, 'USD')}</span>
               </div>
-              <div className="text-gray-500">
-                KRW: <span className="tabular-nums font-medium text-gray-700">{formatCurrencyValue(totalValueKRW, 'KRW')}</span>
+              <div className="text-[var(--color-text-secondary)]">
+                KRW: <span className="tabular-nums font-medium text-[var(--color-text)]">{formatCurrencyValue(totalValueKRW, 'KRW')}</span>
               </div>
-              <div className={gain >= 0 ? 'text-red-500' : 'text-blue-500'}>
+              <div className={gain >= 0 ? 'text-[var(--color-negative)]' : 'text-[var(--color-primary)]'}>
                 <span className="tabular-nums font-medium">
                   {gain >= 0 ? '+' : ''}{formatCurrencyValue(gain, 'USD')}
                 </span>
-                <span className="text-xs ml-1 opacity-70">
+                <span className="text-[11px] ml-1 opacity-70">
                   ({gainPct >= 0 ? '+' : ''}{gainPct.toFixed(1)}%)
                 </span>
               </div>

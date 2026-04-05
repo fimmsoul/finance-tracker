@@ -31,7 +31,7 @@ const colorStyles: Record<GroupColor, { bg: string; text: string; badge: string;
   blue: { bg: 'bg-blue-50', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-700', border: 'border-blue-200' },
   orange: { bg: 'bg-orange-50', text: 'text-orange-700', badge: 'bg-orange-100 text-orange-700', border: 'border-orange-200' },
   pink: { bg: 'bg-pink-50', text: 'text-pink-700', badge: 'bg-pink-100 text-pink-700', border: 'border-pink-200' },
-  gray: { bg: 'bg-gray-50', text: 'text-gray-700', badge: 'bg-gray-100 text-gray-700', border: 'border-gray-200' },
+  gray: { bg: 'bg-slate-50', text: 'text-slate-700', badge: 'bg-slate-100 text-slate-700', border: 'border-slate-200' },
 };
 
 const barColors: Record<GroupColor, string> = {
@@ -40,7 +40,7 @@ const barColors: Record<GroupColor, string> = {
   blue: 'bg-blue-400',
   orange: 'bg-orange-400',
   pink: 'bg-pink-400',
-  gray: 'bg-gray-400',
+  gray: 'bg-slate-400',
 };
 
 const sourceLabels: Record<string, string> = {
@@ -96,12 +96,12 @@ function DraggableRow({
   const pct = grandTotalNav > 0 ? (item.nav / grandTotalNav) * 100 : 0;
 
   return (
-    <tr ref={setNodeRef} style={style} className="border-b border-gray-50 hover:bg-gray-100/60 transition-colors group">
+    <tr ref={setNodeRef} style={style} className="border-b border-[var(--color-border-light)] hover:bg-slate-50 transition-colors duration-200 group">
       <td className="py-2 px-1">
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity touch-none"
+          className="cursor-grab active:cursor-grabbing text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity duration-200 touch-none"
           tabIndex={-1}
         >
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -109,25 +109,25 @@ function DraggableRow({
           </svg>
         </button>
       </td>
-      <td className="py-2 px-3 text-sm text-gray-800 truncate">{item.name}</td>
+      <td className="py-2 px-3 text-[13px] text-[var(--color-text)] truncate">{item.name}</td>
       <td className="py-2 px-3">
-        <span className="text-[10px] uppercase tracking-wider text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+        <span className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] bg-[var(--color-border-light)] px-1.5 py-0.5 rounded">
           {sourceLabels[item.source]}
         </span>
       </td>
-      <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-600 font-medium">
+      <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text-secondary)] font-medium">
         {pct.toFixed(1)}%
       </td>
-      <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-800">
+      <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text)]">
         {formatCurrencyValue(item.nav, displayCurrency)}
       </td>
-      <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-500">
+      <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text-secondary)]">
         {formatCurrencyValue(item.navKRW, 'KRW')}
       </td>
-      <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-500">
+      <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text-secondary)]">
         {formatCurrencyValue(item.cost, displayCurrency)}
       </td>
-      <td className={`py-2 px-3 text-right text-sm tabular-nums ${item.returnPct >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
+      <td className={`py-2 px-3 text-right text-[13px] tabular-nums ${item.returnPct >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
         {item.source === 'cash' ? '—' : `${item.returnPct >= 0 ? '+' : ''}${item.returnPct.toFixed(1)}%`}
       </td>
     </tr>
@@ -137,34 +137,34 @@ function DraggableRow({
 function OverlayRow({ item, grandTotalNav, displayCurrency }: { item: DashboardItem; grandTotalNav: number; displayCurrency: string }) {
   const pct = grandTotalNav > 0 ? (item.nav / grandTotalNav) * 100 : 0;
   return (
-    <table className="w-full table-fixed bg-white shadow-lg rounded-lg border border-gray-200">
+    <table className="w-full table-fixed bg-white shadow-[var(--shadow-md)] rounded-xl border border-[var(--color-border)]">
       <SharedColGroup />
       <tbody>
         <tr>
           <td className="py-2 px-1">
-            <svg className="w-3.5 h-3.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-3.5 h-3.5 text-[var(--color-text-muted)]" fill="currentColor" viewBox="0 0 20 20">
               <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
             </svg>
           </td>
-          <td className="py-2 px-3 text-sm text-gray-800 truncate">{item.name}</td>
+          <td className="py-2 px-3 text-[13px] text-[var(--color-text)] truncate">{item.name}</td>
           <td className="py-2 px-3">
-            <span className="text-[10px] uppercase tracking-wider text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+            <span className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] bg-[var(--color-border-light)] px-1.5 py-0.5 rounded">
               {sourceLabels[item.source]}
             </span>
           </td>
-          <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-600 font-medium">
+          <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text-secondary)] font-medium">
             {pct.toFixed(1)}%
           </td>
-          <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-800">
+          <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text)]">
             {formatCurrencyValue(item.nav, displayCurrency)}
           </td>
-          <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-500">
+          <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text-secondary)]">
             {formatCurrencyValue(item.navKRW, 'KRW')}
           </td>
-          <td className="py-2 px-3 text-right text-sm tabular-nums text-gray-500">
+          <td className="py-2 px-3 text-right text-[13px] tabular-nums text-[var(--color-text-secondary)]">
             {formatCurrencyValue(item.cost, displayCurrency)}
           </td>
-          <td className={`py-2 px-3 text-right text-sm tabular-nums ${item.returnPct >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
+          <td className={`py-2 px-3 text-right text-[13px] tabular-nums ${item.returnPct >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
             {item.source === 'cash' ? '—' : `${item.returnPct >= 0 ? '+' : ''}${item.returnPct.toFixed(1)}%`}
           </td>
         </tr>
@@ -205,22 +205,22 @@ function DroppableGroup({
   const groupPct = grandTotalNav > 0 ? (group.totalNav / grandTotalNav) * 100 : 0;
 
   return (
-    <div className={`mb-6 rounded-lg transition-all ${isOver ? `ring-2 ${colors.border} ring-offset-1` : ''}`}>
+    <div className={`mb-6 rounded-xl border border-[var(--color-border)] bg-white shadow-[var(--shadow-card)] transition-all duration-200 ${isOver ? `ring-2 ${colors.border} ring-offset-1` : ''}`}>
       {/* Category Header */}
-      <div className={`flex items-center justify-between px-4 py-3 rounded-t-lg ${colors.bg}`}>
+      <div className={`flex items-center justify-between px-4 py-3 rounded-t-xl ${colors.bg}`}>
         <div className="flex items-center gap-3">
-          <span className={`text-sm font-semibold uppercase tracking-wider ${colors.text}`}>
+          <span className={`text-[13px] font-semibold uppercase tracking-wider ${colors.text}`}>
             {group.name}
           </span>
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${colors.badge}`}>
+          <span className={`text-[12px] px-2 py-0.5 rounded-full font-medium ${colors.badge}`}>
             {groupPct.toFixed(1)}%
           </span>
         </div>
-        <div className="flex items-center gap-4 text-xs">
+        <div className="flex items-center gap-4 text-[12px]">
           <span className={`tabular-nums font-medium ${colors.text}`}>
             {formatCurrencyValue(group.totalNav, displayCurrency)}
           </span>
-          <span className="tabular-nums text-gray-400">
+          <span className="tabular-nums text-[var(--color-text-muted)]">
             {formatCurrencyValue(group.totalNavKRW, 'KRW')}
           </span>
           <span className={`tabular-nums ${group.returnPct >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
@@ -229,7 +229,7 @@ function DroppableGroup({
           <div className="flex items-center gap-1 ml-2">
             <button
               onClick={() => onEdit(group.id)}
-              className="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
+              className="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] rounded-lg transition-colors duration-200 cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -237,7 +237,7 @@ function DroppableGroup({
             </button>
             <button
               onClick={() => onDelete(group.id)}
-              className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
+              className="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-negative)] rounded-lg transition-colors duration-200 cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -252,22 +252,22 @@ function DroppableGroup({
         <table className="w-full table-fixed">
           <SharedColGroup />
           <thead>
-            <tr className="border-b border-gray-200 text-left">
+            <tr className="border-b border-[var(--color-border)] text-left">
               <th className="py-2 px-1"></th>
-              <th className="py-2 px-3 text-[10px] font-medium text-gray-400 uppercase tracking-wider">Asset</th>
-              <th className="py-2 px-3 text-[10px] font-medium text-gray-400 uppercase tracking-wider">Type</th>
-              <th className="py-2 px-3 text-[10px] font-medium text-gray-400 uppercase tracking-wider text-right">% of NAV</th>
-              <th className="py-2 px-3 text-[10px] font-medium text-gray-400 uppercase tracking-wider text-right">NAV ({displayCurrency})</th>
-              <th className="py-2 px-3 text-[10px] font-medium text-gray-400 uppercase tracking-wider text-right">NAV (KRW)</th>
-              <th className="py-2 px-3 text-[10px] font-medium text-gray-400 uppercase tracking-wider text-right">Cost</th>
-              <th className="py-2 px-3 text-[10px] font-medium text-gray-400 uppercase tracking-wider text-right">Return</th>
+              <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider">Asset</th>
+              <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider">Type</th>
+              <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">% of NAV</th>
+              <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">NAV ({displayCurrency})</th>
+              <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">NAV (KRW)</th>
+              <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">Cost</th>
+              <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-right">Return</th>
             </tr>
           </thead>
           <SortableContext items={group.items.map(itemKey)} strategy={verticalListSortingStrategy}>
             <tbody>
               {group.items.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-4 text-center text-xs text-gray-300">
+                  <td colSpan={8} className="py-4 text-center text-[12px] text-[var(--color-text-muted)]">
                     Drag assets here
                   </td>
                 </tr>
@@ -483,7 +483,7 @@ export default function CustomGroupsView({ viewId }: CustomGroupsViewProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-[var(--color-border)] border-t-[var(--color-primary)] rounded-full animate-spin" />
       </div>
     );
   }
@@ -491,18 +491,18 @@ export default function CustomGroupsView({ viewId }: CustomGroupsViewProps) {
   return (
     <div>
       {/* Header - always visible, sticky */}
-      <div className="flex items-center justify-between mb-6 sticky top-0 bg-[#FAFAF8] z-20 py-2 -mt-2">
+      <div className="flex items-center justify-between mb-6 sticky top-0 bg-[var(--color-bg)] z-20 py-2 -mt-2">
         <div>
-          <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-0.5">Custom Groups Total</p>
+          <p className="text-[11px] text-[var(--color-text-muted)] uppercase tracking-widest mb-0.5">Custom Groups Total</p>
           <div className="flex items-baseline gap-3">
-            <p className="text-3xl font-light text-gray-800 tabular-nums">
+            <p className="text-3xl font-light text-[var(--color-text)] tabular-nums">
               {formatCurrencyValue(grandTotalNav, displayCurrency)}
             </p>
-            <span className="text-sm text-gray-400 tabular-nums">
+            <span className="text-[13px] text-[var(--color-text-muted)] tabular-nums">
               {formatCurrencyValue(grandTotalNavKRW, 'KRW')}
             </span>
             {groupStats.length > 0 && (
-              <span className={`text-sm tabular-nums ${grandTotalReturn >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
+              <span className={`text-[13px] tabular-nums ${grandTotalReturn >= 0 ? 'text-red-500' : 'text-blue-500'}`}>
                 {grandTotalReturn >= 0 ? '+' : ''}{grandTotalReturn.toFixed(1)}%
               </span>
             )}
@@ -510,7 +510,7 @@ export default function CustomGroupsView({ viewId }: CustomGroupsViewProps) {
         </div>
         <button
           onClick={() => setModalOpen(true)}
-          className="px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+          className="px-4 py-2 text-[13px] font-medium text-white bg-[var(--color-primary)] rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors duration-200 cursor-pointer"
         >
           + New Group
         </button>
@@ -519,7 +519,7 @@ export default function CustomGroupsView({ viewId }: CustomGroupsViewProps) {
       {/* Allocation Bar - only shown when groups exist */}
       {groupStats.length > 0 && (
         <div className="mb-6">
-          <div className="flex h-4 rounded-full overflow-hidden bg-gray-100">
+          <div className="flex h-4 rounded-full overflow-hidden bg-[var(--color-border-light)]">
             {groupStats.map((group) => {
               const pct = grandTotalNav > 0 ? (group.totalNav / grandTotalNav) * 100 : 0;
               return (
@@ -539,7 +539,7 @@ export default function CustomGroupsView({ viewId }: CustomGroupsViewProps) {
             {groupStats.map((group) => (
               <div key={group.id} className="flex items-center gap-1.5">
                 <div className={`w-2.5 h-2.5 rounded-full ${barColors[group.color]}`} />
-                <span className="text-[10px] text-gray-400">{group.name}</span>
+                <span className="text-[11px] text-[var(--color-text-muted)]">{group.name}</span>
               </div>
             ))}
           </div>
@@ -549,13 +549,13 @@ export default function CustomGroupsView({ viewId }: CustomGroupsViewProps) {
       {/* Empty State - message when no groups */}
       {groupStats.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-12 h-12 mb-3 rounded-full bg-gray-100 flex items-center justify-center">
-            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-12 h-12 mb-3 rounded-full bg-[var(--color-border-light)] flex items-center justify-center">
+            <svg className="w-6 h-6 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
             </svg>
           </div>
-          <p className="text-gray-500 mb-1">No custom groups</p>
-          <p className="text-sm text-gray-400">Bundle assets as you like for analysis</p>
+          <p className="text-[var(--color-text-secondary)] mb-1">No custom groups</p>
+          <p className="text-[13px] text-[var(--color-text-muted)]">Bundle assets as you like for analysis</p>
         </div>
       )}
 

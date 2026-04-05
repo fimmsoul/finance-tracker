@@ -13,7 +13,7 @@ export default function AssetsView() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="w-5 h-5 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-[var(--color-primary-light)] border-t-[var(--color-primary)] rounded-full animate-spin" />
       </div>
     );
   }
@@ -30,7 +30,7 @@ export default function AssetsView() {
       />
 
       {/* Divider */}
-      <div className="border-t border-gray-200" />
+      <div className="border-t border-[var(--color-border)]" />
 
       {/* Existing assets table */}
       <AssetTable

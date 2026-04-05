@@ -40,7 +40,7 @@ const SelectCell = forwardRef<SelectCellHandle, SelectCellProps>(
         onChange={(e) => onSave(e.target.value)}
         onKeyDown={handleKeyDown}
         className={cn(
-          'w-full bg-transparent outline-none text-sm py-0.5 px-0 rounded cursor-pointer transition-colors appearance-none border-none focus:ring-1 focus:ring-emerald-300 focus:rounded',
+          'w-full bg-transparent outline-none text-[13px] py-0.5 px-0 rounded cursor-pointer transition-colors duration-200 appearance-none border-none focus:ring-1 focus:ring-[var(--color-primary)]/40 focus:rounded text-[var(--color-text)]',
           className
         )}
       >

@@ -29,7 +29,7 @@ const colorStyles: Record<GroupColor, { ring: string; bg: string }> = {
   blue: { ring: 'ring-blue-500', bg: 'bg-blue-500' },
   orange: { ring: 'ring-orange-500', bg: 'bg-orange-500' },
   pink: { ring: 'ring-pink-500', bg: 'bg-pink-500' },
-  gray: { ring: 'ring-gray-500', bg: 'bg-gray-500' },
+  gray: { ring: 'ring-slate-500', bg: 'bg-slate-500' },
 };
 
 function DraggableAssetItem({
@@ -59,18 +59,18 @@ function DraggableAssetItem({
       style={style}
       {...listeners}
       {...attributes}
-      className={`flex items-center justify-between px-3 py-2 bg-white border border-gray-200 rounded-lg cursor-grab active:cursor-grabbing hover:border-gray-300 transition-colors ${isDragging ? 'opacity-50' : ''}`}
+      className={`flex items-center justify-between px-3 py-2 bg-white border border-[var(--color-border)] rounded-lg cursor-grab active:cursor-grabbing hover:border-[var(--color-text-muted)] transition-colors duration-200 ${isDragging ? 'opacity-50' : ''}`}
     >
       <div className="flex items-center gap-2">
-        <svg className="w-3.5 h-3.5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+        <svg className="w-3.5 h-3.5 text-[var(--color-text-muted)]" fill="currentColor" viewBox="0 0 20 20">
           <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
         </svg>
-        <span className="text-sm text-gray-800">{name}</span>
-        <span className="text-[10px] uppercase tracking-wider text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+        <span className="text-[13px] text-[var(--color-text)]">{name}</span>
+        <span className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] bg-[var(--color-border-light)] px-1.5 py-0.5 rounded">
           {source}
         </span>
       </div>
-      <span className="text-xs text-gray-500 tabular-nums">
+      <span className="text-[12px] text-[var(--color-text-secondary)] tabular-nums">
         {formatCurrencyValue(nav, displayCurrency)}
       </span>
     </div>
@@ -93,11 +93,11 @@ function DroppableArea({
   return (
     <div
       ref={setNodeRef}
-      className={`flex-1 min-h-[200px] border-2 border-dashed rounded-lg p-3 transition-colors ${
-        isOver ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-gray-50'
+      className={`flex-1 min-h-[200px] border-2 border-dashed rounded-xl p-3 transition-colors duration-200 ${
+        isOver ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)]' : 'border-[var(--color-border)] bg-[var(--color-border-light)]'
       }`}
     >
-      <p className="text-xs font-medium text-gray-500 mb-3">{label}</p>
+      <p className="text-[12px] font-medium text-[var(--color-text-secondary)] mb-3">{label}</p>
       <div className="space-y-2">
         {children}
       </div>
@@ -257,15 +257,15 @@ export default function CustomGroupModal({ viewId, groupId, onClose }: CustomGro
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-xl shadow-[var(--shadow-md)] w-full max-w-3xl max-h-[90vh] flex flex-col border border-[var(--color-border)]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border)]">
+          <h2 className="text-base font-semibold text-[var(--color-text)]">
             {existingGroup ? 'Edit Group' : 'Create New Group'}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-border-light)] rounded-lg transition-colors duration-200 cursor-pointer"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -278,7 +278,7 @@ export default function CustomGroupModal({ viewId, groupId, onClose }: CustomGro
           {/* Name & Color */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-[12px] font-medium text-[var(--color-text-secondary)] mb-1.5">
                 Group Name
               </label>
               <input
@@ -286,11 +286,11 @@ export default function CustomGroupModal({ viewId, groupId, onClose }: CustomGro
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Dividend Stocks, US Tech"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-shadow"
+                className="w-full px-3 py-2 text-[13px] border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition-shadow duration-200"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-[12px] font-medium text-[var(--color-text-secondary)] mb-1.5">
                 Color
               </label>
               <div className="flex items-center gap-2">
@@ -298,7 +298,7 @@ export default function CustomGroupModal({ viewId, groupId, onClose }: CustomGro
                   <button
                     key={opt.value}
                     onClick={() => setColor(opt.value)}
-                    className={`w-8 h-8 rounded-full ${colorStyles[opt.value].bg} transition-all ${
+                    className={`w-8 h-8 rounded-full ${colorStyles[opt.value].bg} transition-all duration-200 cursor-pointer ${
                       color === opt.value ? `ring-2 ${colorStyles[opt.value].ring} ring-offset-2` : 'hover:scale-110'
                     }`}
                     title={opt.label}
@@ -311,7 +311,7 @@ export default function CustomGroupModal({ viewId, groupId, onClose }: CustomGro
           {/* Search */}
           <div className="mb-4">
             <div className="relative">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
@@ -319,7 +319,7 @@ export default function CustomGroupModal({ viewId, groupId, onClose }: CustomGro
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search assets..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-shadow"
+                className="w-full pl-10 pr-4 py-2 text-[13px] border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition-shadow duration-200"
               />
             </div>
           </div>
@@ -340,7 +340,7 @@ export default function CustomGroupModal({ viewId, groupId, onClose }: CustomGro
                 label={`All Assets (${availableItems.length})`}
               >
                 {availableItems.map((item) => (
-                  <div key={item.compositeId} onClick={() => handleToggle(item.compositeId)}>
+                  <div key={item.compositeId} onClick={() => handleToggle(item.compositeId)} className="cursor-pointer">
                     <DraggableAssetItem
                       id={item.compositeId}
                       name={item.name}
@@ -352,7 +352,7 @@ export default function CustomGroupModal({ viewId, groupId, onClose }: CustomGro
                   </div>
                 ))}
                 {availableItems.length === 0 && (
-                  <p className="text-sm text-gray-400 text-center py-4">
+                  <p className="text-[13px] text-[var(--color-text-muted)] text-center py-4">
                     {searchQuery ? 'No results found' : 'All assets selected'}
                   </p>
                 )}
@@ -365,7 +365,7 @@ export default function CustomGroupModal({ viewId, groupId, onClose }: CustomGro
                 label={`Added to Group (${selectedItems.length})`}
               >
                 {selectedItems.map((item) => (
-                  <div key={item.compositeId} onClick={() => handleToggle(item.compositeId)}>
+                  <div key={item.compositeId} onClick={() => handleToggle(item.compositeId)} className="cursor-pointer">
                     <DraggableAssetItem
                       id={item.compositeId}
                       name={item.name}
@@ -377,7 +377,7 @@ export default function CustomGroupModal({ viewId, groupId, onClose }: CustomGro
                   </div>
                 ))}
                 {selectedItems.length === 0 && (
-                  <p className="text-sm text-gray-400 text-center py-4">
+                  <p className="text-[13px] text-[var(--color-text-muted)] text-center py-4">
                     Drag or click to add assets
                   </p>
                 )}
@@ -386,17 +386,17 @@ export default function CustomGroupModal({ viewId, groupId, onClose }: CustomGro
 
             <DragOverlay>
               {activeItem ? (
-                <div className="flex items-center justify-between px-3 py-2 bg-white border border-blue-400 rounded-lg shadow-lg">
+                <div className="flex items-center justify-between px-3 py-2 bg-white border border-[var(--color-primary)] rounded-lg shadow-[var(--shadow-md)]">
                   <div className="flex items-center gap-2">
-                    <svg className="w-3.5 h-3.5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-3.5 h-3.5 text-[var(--color-text-muted)]" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
                     </svg>
-                    <span className="text-sm text-gray-800">{activeItem.name}</span>
-                    <span className="text-[10px] uppercase tracking-wider text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                    <span className="text-[13px] text-[var(--color-text)]">{activeItem.name}</span>
+                    <span className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] bg-[var(--color-border-light)] px-1.5 py-0.5 rounded">
                       {activeItem.source}
                     </span>
                   </div>
-                  <span className="text-xs text-gray-500 tabular-nums">
+                  <span className="text-[12px] text-[var(--color-text-secondary)] tabular-nums">
                     {formatCurrencyValue(activeItem.nav, displayCurrency)}
                   </span>
                 </div>
@@ -406,18 +406,18 @@ export default function CustomGroupModal({ viewId, groupId, onClose }: CustomGro
 
           {/* Stats Preview */}
           {selectedItems.length > 0 && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <p className="text-xs text-gray-500 mb-2">Preview</p>
+            <div className="mt-4 p-4 bg-[var(--color-border-light)] rounded-xl border border-[var(--color-border)]">
+              <p className="text-[11px] text-[var(--color-text-muted)] uppercase tracking-wider mb-2">Preview</p>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-[13px] font-medium text-[var(--color-text-secondary)]">
                   Total: {formatCurrencyValue(stats.totalNav, displayCurrency)}
                 </span>
-                <span className="text-sm text-gray-500">
+                <span className="text-[13px] text-[var(--color-text-secondary)]">
                   {formatCurrencyValue(stats.totalNavKRW, 'KRW')}
                 </span>
               </div>
               {/* Mini allocation bar */}
-              <div className="flex h-2 rounded-full overflow-hidden bg-gray-200 mt-2">
+              <div className="flex h-2 rounded-full overflow-hidden bg-[var(--color-border)] mt-2">
                 {selectedItems.map((item, index) => {
                   const pct = stats.totalNav > 0 ? (item.nav / stats.totalNav) * 100 : 0;
                   const opacity = 1 - (index * 0.1);
@@ -436,17 +436,17 @@ export default function CustomGroupModal({ viewId, groupId, onClose }: CustomGro
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--color-border)] bg-[var(--color-border-light)]">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 text-[13px] font-medium text-[var(--color-text-secondary)] bg-white border border-[var(--color-border)] rounded-lg hover:bg-slate-50 transition-colors duration-200 cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={!name.trim() || saving}
-            className="px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 text-[13px] font-medium text-white bg-[var(--color-primary)] rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 cursor-pointer"
           >
             {saving ? 'Saving...' : existingGroup ? 'Save' : 'Create'}
           </button>

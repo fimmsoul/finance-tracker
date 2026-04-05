@@ -107,7 +107,7 @@ export default function DailySnapshotTable({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="w-5 h-5 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-[var(--color-primary-light)] border-t-[var(--color-primary)] rounded-full animate-spin" />
       </div>
     );
   }
@@ -115,12 +115,12 @@ export default function DailySnapshotTable({
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-700">Daily Asset Record</h3>
+        <h3 className="text-base font-medium text-[var(--color-text)]">Daily Asset Record</h3>
         {onRefresh && (
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-border-light)] rounded-lg transition-colors duration-200 disabled:opacity-50 cursor-pointer"
           >
             <svg
               className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`}
@@ -141,26 +141,26 @@ export default function DailySnapshotTable({
       </div>
 
       {snapshots.length === 0 ? (
-        <div className="text-center py-8 text-gray-300 text-sm">
+        <div className="text-center py-8 text-[var(--color-text-muted)] text-[13px]">
           No snapshots yet. Your first daily record will be created automatically.
         </div>
       ) : (
         <div ref={scrollRef} className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="py-2 px-3 text-xs font-medium text-gray-400 uppercase tracking-wider text-left sticky left-0 bg-white z-10 min-w-[100px]">
+              <tr className="border-b border-[var(--color-border)]">
+                <th className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider text-left sticky left-0 bg-white z-10 min-w-[100px]">
                   Category
                 </th>
                 {snapshots.map((snap) => (
                   <th
                     key={snap.id}
-                    className="py-2 px-3 text-xs font-medium text-gray-400 tracking-wider text-right min-w-[100px] whitespace-nowrap"
+                    className="py-2 px-3 text-[11px] font-medium text-[var(--color-text-muted)] tracking-wider text-right min-w-[100px] whitespace-nowrap"
                   >
                     <div className="flex items-center justify-end gap-1.5">
                       <span>{formatDateLabel(snap.snapshot_date)}</span>
                       {snap.snapshot_date === today && (
-                        <span className="text-[9px] text-emerald-500 font-normal">today</span>
+                        <span className="text-[9px] text-[var(--color-primary)] font-normal">today</span>
                       )}
                     </div>
                   </th>
@@ -169,8 +169,8 @@ export default function DailySnapshotTable({
             </thead>
             <tbody>
               {snapshotCategories.map((cat) => (
-                <tr key={cat.key} className="border-b border-gray-100 hover:bg-gray-50/50">
-                  <td className="py-2 px-3 text-sm text-gray-600 font-medium sticky left-0 bg-white z-10">
+                <tr key={cat.key} className="border-b border-[var(--color-border-light)] hover:bg-[var(--color-border-light)]/50 transition-colors duration-200">
+                  <td className="py-2 px-3 text-[13px] text-[var(--color-text-secondary)] font-medium sticky left-0 bg-white z-10">
                     {cat.label}
                   </td>
                   {snapshots.map((snap) => {
@@ -180,9 +180,9 @@ export default function DailySnapshotTable({
                       ? (todayLiveTotals as unknown as Record<string, number>)[cat.key] ?? 0
                       : (snap[cat.key] as number);
                     return (
-                      <td key={snap.id} className="py-2 px-3 text-sm text-right tabular-nums text-gray-700">
+                      <td key={snap.id} className="py-2 px-3 text-[13px] text-right tabular-nums text-[var(--color-text)]">
                         {rawUsd > 0 ? formatCurrencyValue(displayValue, displayCurrency) : (
-                          <span className="text-gray-200">—</span>
+                          <span className="text-[var(--color-border)]">—</span>
                         )}
                       </td>
                     );
@@ -190,29 +190,29 @@ export default function DailySnapshotTable({
                 </tr>
               ))}
               {/* Total row */}
-              <tr className="border-t-2 border-gray-200 font-semibold">
-                <td className="py-2.5 px-3 text-sm text-gray-900 sticky left-0 bg-white z-10">
+              <tr className="border-t-2 border-[var(--color-border)] font-semibold">
+                <td className="py-2.5 px-3 text-[13px] text-[var(--color-text)] sticky left-0 bg-white z-10">
                   Total
                 </td>
                 {snapshots.map((snap) => {
                   const displayTotal = getTotalValue(snap);
                   return (
-                    <td key={snap.id} className="py-2.5 px-3 text-sm text-right tabular-nums text-gray-900">
+                    <td key={snap.id} className="py-2.5 px-3 text-[13px] text-right tabular-nums text-[var(--color-text)]">
                       {formatCurrencyValue(displayTotal, displayCurrency)}
                     </td>
                   );
                 })}
               </tr>
               {/* Day-over-day change row */}
-              <tr className="border-t border-gray-100">
-                <td className="py-2 px-3 text-xs text-gray-400 sticky left-0 bg-white z-10">
+              <tr className="border-t border-[var(--color-border-light)]">
+                <td className="py-2 px-3 text-[11px] text-[var(--color-text-muted)] sticky left-0 bg-white z-10">
                   Change
                 </td>
                 {snapshots.map((snap, idx) => {
                   // Descending order: previous day is idx + 1
                   if (idx === snapshots.length - 1) {
                     return (
-                      <td key={snap.id} className="py-2 px-3 text-xs text-right text-gray-300">
+                      <td key={snap.id} className="py-2 px-3 text-[11px] text-right text-[var(--color-text-muted)]">
                         —
                       </td>
                     );
@@ -227,8 +227,8 @@ export default function DailySnapshotTable({
                   return (
                     <td
                       key={snap.id}
-                      className={`py-2 px-3 text-xs text-right tabular-nums ${
-                        isPositive ? 'text-red-500' : 'text-blue-500'
+                      className={`py-2 px-3 text-[11px] text-right tabular-nums ${
+                        isPositive ? 'text-[var(--color-negative)]' : 'text-[var(--color-primary)]'
                       }`}
                     >
                       {isPositive ? '+' : ''}
@@ -244,16 +244,16 @@ export default function DailySnapshotTable({
               </tr>
               {/* Delete row */}
               {onDelete && (
-                <tr className="border-t border-gray-100">
-                  <td className="py-1.5 px-3 text-xs text-gray-300 sticky left-0 bg-white z-10" />
+                <tr className="border-t border-[var(--color-border-light)]">
+                  <td className="py-1.5 px-3 text-[11px] text-[var(--color-text-muted)] sticky left-0 bg-white z-10" />
                   {snapshots.map((snap) => (
                     <td key={snap.id} className="py-1.5 px-3 text-right">
                       <button
                         onClick={() => handleDelete(snap.id)}
-                        className={`text-[10px] transition-colors cursor-pointer ${
+                        className={`text-[10px] transition-colors duration-200 cursor-pointer ${
                           confirmDeleteId === snap.id
-                            ? 'text-red-500 font-medium'
-                            : 'text-gray-300 hover:text-gray-400'
+                            ? 'text-[var(--color-negative)] font-medium'
+                            : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'
                         }`}
                         title={confirmDeleteId === snap.id ? 'Click again to confirm' : 'Delete this snapshot'}
                       >

@@ -59,11 +59,24 @@ ipcMain.on('open-external', (_event, url: string) => {
   shell.openExternal(url);
 });
 
+// Handle EPIPE errors gracefully (can occur when stdout pipe closes during shutdown)
+process.stdout.on('error', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EPIPE') return;
+  throw err;
+});
+
+process.on('uncaughtException', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EPIPE') return;
+  console.error('Uncaught exception:', err);
+});
+
+// yahoo-finance2 v3 requires creating an instance first
+const YahooFinance = require('yahoo-finance2').default;
+const yahooFinance = new YahooFinance({ suppressNotices: ['yahooSurvey'] });
+
 // Handle Yahoo Finance stock price fetching
 ipcMain.handle('fetch-stock-prices', async (_event, tickers: string[]) => {
   try {
-    const YahooFinance = require('yahoo-finance2').default;
-    const yahooFinance = new YahooFinance();
     const results: Record<string, { price: number; currency: string } | null> = {};
 
     // Fetch quotes for all tickers in parallel

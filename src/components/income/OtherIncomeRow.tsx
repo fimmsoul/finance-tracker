@@ -25,7 +25,7 @@ export default function OtherIncomeRow({ income, onUpdate, onDelete, isNew }: Ot
   const [confirming, setConfirming] = useState(false);
   const { convert, displayCurrency } = useCurrencyContext();
 
-  // Refs for Tab navigation: Date → Source → Category → Currency → Amount → Notes
+  // Refs for Tab navigation: Date -> Source -> Category -> Currency -> Amount -> Notes
   const dateRef = useRef<DatePickerCellHandle>(null);
   const sourceRef = useRef<EditableCellHandle>(null);
   const categoryRef = useRef<SelectCellHandle>(null);
@@ -44,7 +44,7 @@ export default function OtherIncomeRow({ income, onUpdate, onDelete, isNew }: Ot
   const displayAmount = convert(income.amount, income.currency);
 
   return (
-    <tr className="border-b border-gray-50 hover:bg-gray-100/60 transition-colors group">
+    <tr className="border-b border-[var(--color-border-light)] hover:bg-[var(--color-bg-sidebar)]/60 transition-colors duration-200 group">
       {/* 0: Date */}
       <td className="py-1.5 px-2 w-32">
         <DatePickerCell
@@ -103,7 +103,7 @@ export default function OtherIncomeRow({ income, onUpdate, onDelete, isNew }: Ot
         />
       </td>
       {/* In displayCurrency (read-only) */}
-      <td className="py-1.5 px-2 w-28 text-right text-sm tabular-nums text-gray-400">
+      <td className="py-1.5 px-2 w-28 text-right text-[13px] tabular-nums text-[var(--color-text-muted)]">
         {income.currency !== displayCurrency && formatCurrencyValue(displayAmount, displayCurrency)}
       </td>
       {/* 5: Notes */}
@@ -113,7 +113,7 @@ export default function OtherIncomeRow({ income, onUpdate, onDelete, isNew }: Ot
           value={income.notes || ''}
           onSave={(v) => onUpdate(income.id, { notes: v || null })}
           placeholder="Notes"
-          className="text-gray-400"
+          className="text-[var(--color-text-muted)]"
           onTab={() => {}}
           onShiftTab={() => goTo(4)}
         />
@@ -124,13 +124,13 @@ export default function OtherIncomeRow({ income, onUpdate, onDelete, isNew }: Ot
           <div className="flex gap-1">
             <button
               onClick={() => { onDelete(income.id); setConfirming(false); }}
-              className="text-xs text-red-500 hover:text-red-700 cursor-pointer"
+              className="text-[12px] text-[var(--color-negative)] hover:text-red-700 cursor-pointer transition-colors duration-200"
             >
               Yes
             </button>
             <button
               onClick={() => setConfirming(false)}
-              className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer"
+              className="text-[12px] text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] cursor-pointer transition-colors duration-200"
             >
               No
             </button>
@@ -138,7 +138,7 @@ export default function OtherIncomeRow({ income, onUpdate, onDelete, isNew }: Ot
         ) : (
           <button
             onClick={() => setConfirming(true)}
-            className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all cursor-pointer"
+            className="opacity-0 group-hover:opacity-100 text-[var(--color-text-muted)] hover:text-[var(--color-negative)] transition-all duration-200 cursor-pointer"
             title="Delete"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

@@ -9,6 +9,7 @@ export interface DailySnapshot {
   bonds_value: number;
   real_estate_value: number;
   total_value: number;
+  member_id: string | null;
   created_at: string;
   updated_at: string;
 }

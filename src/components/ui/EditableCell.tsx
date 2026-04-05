@@ -105,7 +105,7 @@ const EditableCell = forwardRef<EditableCellHandle, EditableCellProps>(
           step={type === 'number' ? 'any' : undefined}
           min={type === 'number' && min !== undefined ? min : undefined}
           className={cn(
-            'w-full bg-transparent outline-none text-sm py-0.5 px-1 -mx-1 rounded border border-emerald-300 focus:border-emerald-500',
+            'w-full bg-transparent outline-none text-[13px] py-0.5 px-1 -mx-1 rounded border border-[var(--color-primary)]/40 focus:border-[var(--color-primary)] text-[var(--color-text)] duration-200',
             type === 'number' && 'tabular-nums text-right',
             className
           )}
@@ -121,9 +121,9 @@ const EditableCell = forwardRef<EditableCellHandle, EditableCellProps>(
       <span
         onClick={() => setEditing(true)}
         className={cn(
-          'block w-full text-sm py-0.5 px-1 -mx-1 rounded cursor-text transition-colors min-h-[1.5rem]',
+          'block w-full text-[13px] py-0.5 px-1 -mx-1 rounded cursor-text transition-colors duration-200 min-h-[1.5rem]',
           type === 'number' && 'tabular-nums text-right',
-          isEmpty && 'text-gray-300',
+          isEmpty && 'text-[var(--color-text-muted)]',
           className
         )}
       >

@@ -7,6 +7,7 @@ export interface CashAccount {
   currency: string;
   notes: string | null;
   position: 'attacker' | 'midfielder' | 'defender';
+  member_id: string | null;
   created_at: string;
   updated_at: string;
 }

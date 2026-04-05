@@ -1,5 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { CurrencyProvider } from '@/hooks/CurrencyContext';
+import { FamilyProvider } from '@/hooks/FamilyContext';
 import { DataProvider } from '@/hooks/DataContext';
 import { StockRefreshProvider } from '@/hooks/StockRefreshContext';
 import LoginScreen from '@/components/auth/LoginScreen';
@@ -10,8 +11,8 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#FAFAF8]">
-        <div className="w-6 h-6 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin" />
+      <div className="flex items-center justify-center h-screen bg-[var(--color-bg)]">
+        <div className="w-6 h-6 border-2 border-[var(--color-primary-light)] border-t-[var(--color-primary)] rounded-full animate-spin" />
       </div>
     );
   }
@@ -22,11 +23,13 @@ export default function App() {
 
   return (
     <CurrencyProvider>
-      <DataProvider>
-        <StockRefreshProvider>
-          <AppShell user={user} onSignOut={signOut} />
-        </StockRefreshProvider>
-      </DataProvider>
+      <FamilyProvider>
+        <DataProvider>
+          <StockRefreshProvider>
+            <AppShell user={user} onSignOut={signOut} />
+          </StockRefreshProvider>
+        </DataProvider>
+      </FamilyProvider>
     </CurrencyProvider>
   );
 }
